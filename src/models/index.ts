@@ -46,7 +46,7 @@ async function initDB(): Promise<Sequelize> {
       "Connection to the database has been established successfully."
     );
 
-    await sequelize.sync({  force: true  });
+    await sequelize.sync({  alter: false  });
 
     return sequelize; // Return the Sequelize instance
   } catch (error) {

@@ -6,6 +6,7 @@ import {
   PrimaryKey,
   Default,
   Unique,
+  AllowNull,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 
@@ -37,6 +38,10 @@ export class User extends Model {
 
   @Column(DataType.STRING)
   country?: string;
+
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  role!: string;
 }
 
 // import { DataTypes, Model, Sequelize } from 'sequelize';
