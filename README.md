@@ -16,10 +16,33 @@ This is a bug tracking system built with Node.js and Express. It uses PostgreSQL
 
 ## Project Structure
 
-The main application entry point is `src/server.js`. The `src/controllers` directory contains the logic for handling requests for bugs, comments, projects, and users. The `src/routes` directory contains the routes for the application. The `src/middleware` directory contains middleware functions for authentication and authorization.
+The main application entry point is `src/app.ts`. The `src/models` directory contains the data models and data transfer objects (DTOs). The `src/repositories` directory contains the classes that interact with the database. The `src/routers` directory contains the routes for the application. The `src/services` directory contains the classes that contain the business logic. The `src/utils` directory contains utility functions used across the application.
 
+Here is a more detailed breakdown:
 
+- `src/`
+    - `app.ts`: Main application entry point
+    - `models/`: Contains data models and DTOs
+        - `dto/`: Contains DTOs
+            - `EmployeeDTO.ts`
+            - `OrganizationDTO.ts`
+            - `UserDTO.ts`
+        - `Employee.ts`
+        - `Organization.ts`
+        - `User.ts`
+    - `repositories/`: Contains classes that interact with the database
+        - `EmployeeRepository.ts`
+        - `OrganizationRepository.ts`
+        - `UserRepository.ts`
+    - `routers/`: Contains the routes for the application
+        - `userRouter.ts`
+    - `services/`: Contains classes that contain the business logic
+        - `UserService.ts`
+    - `utils/`: Contains utility functions used across the application
+        - `hashPassword.ts`
+        - `responseHandler.ts`
+        - `validateDTO.ts`
 
 ## License
 
-ISC 
+ISC
