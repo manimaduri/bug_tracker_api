@@ -1,5 +1,14 @@
 import { validate } from "class-validator";
 
+class HttpError extends Error {
+  statusCode: number;
+
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 export async function validateDTO(dto: any) {
   const errors = await validate(dto);
   if (errors.length > 0) {
@@ -10,6 +19,6 @@ export async function validateDTO(dto: any) {
         return constraints[1] || constraints[0];
       })
       .join(", ");
-    throw new Error(errorMessages);
+      throw new HttpError(errorMessages, 400);
   }
 }

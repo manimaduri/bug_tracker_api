@@ -8,7 +8,7 @@ export function successResponse(res: Response, data: any, statusCode: number = 2
 }
 
 export function errorResponse(res: Response, error: any, message: string, statusCode: number = 400) {
-  return res.status(error?.statusCode || statusCode).json({
+  return res.status(statusCode).json({
     success: false,
     message,
   });

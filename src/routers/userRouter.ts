@@ -12,7 +12,7 @@ router.post("/register", async (req, res) => {
     successResponse(res, result, 201);
   } catch (error: any) {
     console.log("Error creating user:", error.stack);
-    errorResponse(res, error, error?.message ?? "Registration Failed!!",error.statusCode || 500);
+    errorResponse(res, error, error?.message ?? "Registration Failed! Please try again.",error.statusCode || 500);
   }
 });
 

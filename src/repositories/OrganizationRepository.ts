@@ -1,6 +1,5 @@
 import { Organization } from "../models/Organization";
 import { Transaction } from "sequelize";
-import { Op } from 'sequelize';
 
 export class OrganizationRepository {
   async createOrganization(
@@ -11,6 +10,7 @@ export class OrganizationRepository {
       const result = await Organization.create(organizationData, options);
       return result;
     } catch (error) {
+      console.log("Error creating organization:", error);
       throw new Error(`Error creating organization: ${error}`);
     }
   }
@@ -23,6 +23,7 @@ export class OrganizationRepository {
     });
 
     if (!organization) {
+      console.log("No organization found with the given user ID");
       throw new Error("No organization found with the given user ID");
     }
 

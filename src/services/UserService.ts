@@ -10,7 +10,7 @@ import { EmployeeDTO } from "../models/dto/EmployeeDTO";
 import { validateDTO } from "../utils/validateDTO";
 import { initDB } from "../models";
 import { CreateUserDTO, UserRole } from "../models/dto/UserDTO";
-import { UniqueConstraintError } from "sequelize";
+import { UniqueConstraintError, Transaction } from "sequelize";
 
 export class UserService {
   private userRepository: UserRepository;
@@ -24,94 +24,116 @@ export class UserService {
   }
 
   async createUser(user: Partial<User>) {
-    let createdUser;
-    let token;
-
-    // Get the Sequelize instance
     const sequelize = await initDB();
-
-    // Start a transaction
     const transaction = await sequelize.transaction();
     try {
-      const userDTO = plainToClass(CreateUserDTO, user);
-      await validateDTO(userDTO);
-
-      // Hash the user's password
-      userDTO.password = await hashPassword(userDTO.password);
-
-      // Create the user
-      createdUser = await this.userRepository.createUser(userDTO, {
+      const userDTO = await this.prepareUserDTO(user);
+      const createdUser = await this.userRepository.createUser(userDTO, {
         transaction,
       });
-      if (!process.env.JWT_SECRET) {
-        throw new Error("JWT_SECRET is not defined");
-      }
+      const token = this.generateToken(createdUser, userDTO.role);
 
-      // Generate a JWT token for the user
-      token = jwt.sign(
-        { userId: createdUser.id, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRY }
-      );
-
-      // If the user was created successfully, add data to the respective table based on the user's role
       if (user.role === UserRole.ORGANIZATION) {
-        const organizationDTO = plainToClass(CreateOrganizationDTO, {
-          userId: createdUser.id,
-          ...user,
-        });
-        await validateDTO(organizationDTO);
-        await this.organizationRepository.createOrganization(organizationDTO, {
-          transaction,
-        });
+        await this.handleOrganizationUser(
+          user,
+          userDTO,
+          createdUser,
+          transaction
+        );
       } else if (user.role === UserRole.EMPLOYEE) {
-        // Extract the domain from the email
-        const emailDomain = userDTO.email.split("@")[1];
-
-        // Check if there is an existing organization with the same email domain
-        const organizationUser =
-          await this.userRepository.findOrganizationUserByEmailDomain(
-            emailDomain
-          );
-
-        if (!organizationUser?.id) {
-          throw new Error(
-            "No organization user found with the given email domain"
-          );
-        }
-
-        const organization =
-          await this.organizationRepository.findOrganizationByUserId(
-            organizationUser.id
-          );
-
-        if (!organization) {
-          throw new Error("No organization exists with the same email domain");
-        }
-
-        const employeeDTO = plainToClass(EmployeeDTO, {
-          userId: createdUser.id,
-          organizationId: organization.id,
-          ...user,
-        });
-        await validateDTO(employeeDTO);
-
-        await this.employeeRepository.createEmployee(employeeDTO, {
-          transaction,
-        });
+        await this.handleEmployeeUser(user, userDTO, createdUser, transaction);
       }
 
-      // Commit the transaction
       await transaction.commit();
+      return this.formatResponse(createdUser, token);
     } catch (error) {
-      // If there was an error, rollback the transaction
       await transaction.rollback();
-      if (error instanceof UniqueConstraintError) {
-        throw new Error("User already exists!");
-      }
-      throw error;
+      this.handleError(error);
     }
-    // Return the created user and their token
+  }
+
+  async prepareUserDTO(user: Partial<User>) {
+    const userDTO = plainToClass(CreateUserDTO, user);
+    await validateDTO(userDTO);
+    userDTO.password = await hashPassword(userDTO.password);
+    return userDTO;
+  }
+
+  generateToken(createdUser: User, role: string) {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+    return jwt.sign(
+      { userId: createdUser.id, role: role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRY }
+    );
+  }
+
+  async handleOrganizationUser(
+    user: Partial<User>,
+    userDTO: CreateUserDTO,
+    createdUser: User,
+    transaction: Transaction
+  ) {
+    const organizationDTO = plainToClass(CreateOrganizationDTO, {
+      userId: createdUser.id,
+      ...user,
+    });
+    await validateDTO(organizationDTO);
+    const organizationExists =
+      await this.userRepository.findOrganizationUserByEmailDomain(
+        userDTO.email.split("@")[1]
+      );
+    if (organizationExists) {
+      throw new Error("Organization already exists");
+    }
+    try {
+      await this.organizationRepository.createOrganization(organizationDTO, {
+        transaction,
+      });
+    } catch (error: any) {
+      console.log("Failed to create organization", error?.message);
+      throw new Error(error?.message || "Failed to create organization ");
+    }
+  }
+
+  async handleEmployeeUser(
+    user: Partial<User>,
+    userDTO: CreateUserDTO,
+    createdUser: User,
+    transaction: Transaction
+  ) {
+    const emailDomain = userDTO.email.split("@")[1];
+    const organizationUser =
+      await this.userRepository.findOrganizationUserByEmailDomain(emailDomain);
+    if (!organizationUser?.id) {
+      throw new Error("No organization user found with the given email domain");
+    }
+    const organization =
+      await this.organizationRepository.findOrganizationByUserId(
+        organizationUser.id
+      );
+    if (!organization) {
+      throw new Error("No organization exists with the same email domain");
+    }
+    const employeeDTO = plainToClass(EmployeeDTO, {
+      userId: createdUser.id,
+      organizationId: organization.id,
+      ...user,
+    });
+    await validateDTO(employeeDTO);
+    try {
+      await this.employeeRepository.createEmployee(employeeDTO, {
+        transaction,
+      });
+    } catch (error: any) {
+      console.log("Failed to create employee", error?.message);
+      throw new Error(error?.message || "Failed to create employee ");
+    }
+  }
+
+  formatResponse(createdUser: User, token: string) {
     return {
       user: {
         id: createdUser.id,
@@ -120,5 +142,12 @@ export class UserService {
       },
       token,
     };
+  }
+
+  handleError(error: any) {
+    if (error instanceof UniqueConstraintError) {
+      throw new Error("User already exists!");
+    }
+    throw error;
   }
 }
