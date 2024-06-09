@@ -7,8 +7,13 @@ import {
   Default,
   Unique,
   AllowNull,
+  BelongsToMany,
+  HasMany,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
+import { Project } from "./Project";
+import { UserProject } from "./UserProject";
+import { Bug } from "./Bug";
 
 @Table({ tableName: "users" })
 export class User extends Model {
@@ -43,6 +48,21 @@ export class User extends Model {
   @AllowNull(false)
   @Column(DataType.STRING)
   role!: string;
+
+  @BelongsToMany(() => Project, { through: () => UserProject, onDelete: "CASCADE" })
+  projects!: Project[];
+
+  @HasMany(() => Bug, { 
+    foreignKey: 'assignedTo', 
+    as: 'AssignedBugs', 
+  })
+  assignedBugs!: Bug[];
+  
+  @HasMany(() => Bug, { 
+    foreignKey: 'createdBy', 
+    as: 'CreatedBugs', 
+  })
+  createdBugs!: Bug[];
 }
 
 // import { DataTypes, Model, Sequelize } from 'sequelize';

@@ -1,4 +1,3 @@
-// Notification.ts
 import {
     Table,
     Column,
@@ -35,6 +34,10 @@ import {
     @AllowNull(false)
     @Column(DataType.BOOLEAN)
     read!: boolean;
+
+    @AllowNull(false)
+    @Column(DataType.STRING)
+    referenceId!: string;
   
     @BelongsTo(() => User, {onDelete : "CASCADE"})
     user!: User;

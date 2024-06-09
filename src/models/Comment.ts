@@ -1,4 +1,3 @@
-// Comment.ts
 import {
     Table,
     Column,

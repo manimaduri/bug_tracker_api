@@ -8,9 +8,11 @@ import {
   AllowNull,
   PrimaryKey,
   Default,
+  HasMany,
 } from "sequelize-typescript";
 import { User } from "./User";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
+import { Project } from "./Project";
 
 @Table({ tableName: "organizations" })
 export class Organization extends Model {
@@ -27,6 +29,9 @@ export class Organization extends Model {
   @Column(DataType.STRING)
   companyName!: string;
 
-  @BelongsTo(() => User, {onDelete : "CASCADE"})
+  @HasMany(() => Project, { foreignKey: "createdBy" })
+  projects!: Project[];
+
+  @BelongsTo(() => User, { onDelete: "CASCADE" })
   user!: User;
 }

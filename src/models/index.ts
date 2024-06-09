@@ -3,6 +3,11 @@ import { User } from './User';
 import { Organization } from './Organization';
 import { Employee } from './Employee';
 import dotenv from "dotenv";
+import { Bug } from './Bug';
+import { Comment } from './Comment';
+import { Notification } from './Notification';
+import { Project } from './Project';
+import { UserProject } from './UserProject';
 
 // const fetchSecret = require("../utility/secretManager"); for later use
 dotenv.config();
@@ -38,7 +43,7 @@ async function initDB(): Promise<Sequelize> {
     // Force the creation of UserEducation table
 
     sequelize.addModels([
-      User, Organization, Employee
+      User, Organization, Employee, Bug, Comment, Notification, Project, UserProject
     ]);
 
     await sequelize.authenticate();
