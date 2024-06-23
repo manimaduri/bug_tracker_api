@@ -20,15 +20,18 @@ export class OrganizationRepository {
     try {
       const organization = await Organization.findOne({
         where: {
-          userId: userId
-        }
+          userId: userId,
+        },
       });
-  
+
       if (!organization) {
         console.log("No organization found with the given user ID");
-        throw new HttpError("No organization found with the given user ID", 404);
+        throw new HttpError(
+          "No organization found with the given user ID",
+          404
+        );
       }
-  
+
       return organization;
     } catch (error) {
       console.log("Error finding organization by user ID:", error);
@@ -36,5 +39,15 @@ export class OrganizationRepository {
     }
   }
 
-  
+  async findOrganizationById(organizationId: string) {
+    try {
+      const organization = await Organization.findOne({
+        where: { id: organizationId },
+      });
+      return organization;
+    } catch (error) {
+      console.error("Error finding organization by ID:", error);
+      throw new HttpError(`Error finding organization by ID`);
+    }
+  }
 }
