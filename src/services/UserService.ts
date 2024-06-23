@@ -12,6 +12,7 @@ import { initDB } from "../models";
 import { CreateUserDTO, UserRole } from "../models/dto/UserDTO";
 import { UniqueConstraintError, Transaction } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
+import bcrypt from "bcrypt";
 
 export class UserService {
   private userRepository: UserRepository;
@@ -51,6 +52,22 @@ export class UserService {
       await transaction.rollback();
       this.handleError(error);
     }
+  }
+
+  async authenticateUser(email: string, password: string): Promise<any> {
+    const user = await this.userRepository.findUserByEmail(email);
+    if (!user) {
+      throw new HttpError("User not found", 404);
+    }
+  
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new HttpError("Invalid Credentials", 401);
+    }
+  
+    const token = this.generateToken(user, user.role);
+  
+    return this.formatResponse(user, token);
   }
 
   async prepareUserDTO(user: Partial<User>) {

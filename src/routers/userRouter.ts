@@ -16,4 +16,15 @@ router.post("/register", async (req, res) => {
   }
 });
 
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const result = await userService.authenticateUser(email, password);
+    successResponse(res, result, 200);
+  } catch (error: any) {
+    console.error("Error logging in user........:", error.stack);
+    errorResponse(res, error, error?.message ?? "Login Failed! Please try again.", error?.statusCode || 500);
+  }
+});
+
 export default router;

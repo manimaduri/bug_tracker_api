@@ -15,8 +15,8 @@ export class UserRepository {
       if (error instanceof UniqueConstraintError) {
         throw new HttpError("User already exists!",409);
       }
-      console.log("Error creating user:", error);
-      throw new HttpError(`Error creating user: ${error}`);
+      console.error("Error creating user:", error);
+      throw new HttpError(`Unable to register`);
     }
   }
 
@@ -33,8 +33,23 @@ export class UserRepository {
       
       return organizationUser;
     } catch (error) {
-      console.log("Error finding organization by email domain:", error);
-      throw new HttpError(`Error finding organization: ${error}`);
+      console.error("Error finding organization by email domain:", error);
+      throw new HttpError(`Error finding organization`);
+    }
+  }
+
+  async findUserByEmail(email: string) {
+    try {
+      const user = await User.findOne({
+        where: {
+          email: email,
+        },
+      });
+  
+      return user;
+    } catch (error) {
+      console.error("Error finding user by email:", error);
+      throw new HttpError(`Error finding user: ${error}`);
     }
   }
 }
