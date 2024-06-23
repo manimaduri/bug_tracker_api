@@ -1,13 +1,5 @@
 import { validate } from "class-validator";
-
-class HttpError extends Error {
-  statusCode: number;
-
-  constructor(message: string, statusCode: number) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
+import { HttpError } from "./responseHandler";
 
 export async function validateDTO(dto: any) {
   const errors = await validate(dto);

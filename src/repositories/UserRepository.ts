@@ -1,6 +1,7 @@
 import { UserRole } from "../models/dto/UserDTO";
 import { User } from "../models/User";
 import { Op, Transaction, UniqueConstraintError } from "sequelize";
+import { HttpError } from "../utils/responseHandler";
 
 export class UserRepository {
   async createUser(
@@ -12,10 +13,10 @@ export class UserRepository {
       return await User.create(user, options);
     } catch (error) {
       if (error instanceof UniqueConstraintError) {
-        throw new Error("User already exists!");
+        throw new HttpError("User already exists!",409);
       }
       console.log("Error creating user:", error);
-      throw new Error(`Error creating user: ${error}`);
+      throw new HttpError(`Error creating user: ${error}`);
     }
   }
 
@@ -29,10 +30,11 @@ export class UserRepository {
           role: UserRole.ORGANIZATION,
         },
       });
+      
       return organizationUser;
     } catch (error) {
       console.log("Error finding organization by email domain:", error);
-      throw new Error(`Error finding organization by email domain: ${error}`);
+      throw new HttpError(`Error finding organization: ${error}`);
     }
   }
 }

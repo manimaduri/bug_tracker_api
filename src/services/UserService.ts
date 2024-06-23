@@ -11,6 +11,7 @@ import { validateDTO } from "../utils/validateDTO";
 import { initDB } from "../models";
 import { CreateUserDTO, UserRole } from "../models/dto/UserDTO";
 import { UniqueConstraintError, Transaction } from "sequelize";
+import { HttpError } from "../utils/responseHandler";
 
 export class UserService {
   private userRepository: UserRepository;
@@ -61,7 +62,7 @@ export class UserService {
 
   generateToken(createdUser: User, role: string) {
     if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined");
+      throw new HttpError("JWT_SECRET is not defined");
     }
     return jwt.sign(
       { userId: createdUser.id, role: role },
@@ -86,7 +87,7 @@ export class UserService {
         userDTO.email.split("@")[1]
       );
     if (organizationExists) {
-      throw new Error("Organization already exists");
+      throw new HttpError("Organization already exists",400);
     }
     try {
       await this.organizationRepository.createOrganization(organizationDTO, {
@@ -94,7 +95,7 @@ export class UserService {
       });
     } catch (error: any) {
       console.log("Failed to create organization", error?.message);
-      throw new Error(error?.message || "Failed to create organization ");
+      throw new HttpError(error?.message || "Failed to create organization ", error?.statusCode || 500);
     }
   }
 
@@ -108,14 +109,14 @@ export class UserService {
     const organizationUser =
       await this.userRepository.findOrganizationUserByEmailDomain(emailDomain);
     if (!organizationUser?.id) {
-      throw new Error("No organization user found with the given email domain");
+      throw new HttpError("No organization found with the given email domain", 404);
     }
     const organization =
       await this.organizationRepository.findOrganizationByUserId(
         organizationUser.id
       );
     if (!organization) {
-      throw new Error("No organization exists with the same email domain");
+      throw new HttpError("No organization exists with the same email domain", 404);
     }
     const employeeDTO = plainToClass(EmployeeDTO, {
       userId: createdUser.id,
@@ -129,7 +130,7 @@ export class UserService {
       });
     } catch (error: any) {
       console.log("Failed to create employee", error?.message);
-      throw new Error(error?.message || "Failed to create employee ");
+      throw new HttpError(error?.message || "Failed to create employee ", error?.statusCode || 500);
     }
   }
 
@@ -146,7 +147,7 @@ export class UserService {
 
   handleError(error: any) {
     if (error instanceof UniqueConstraintError) {
-      throw new Error("User already exists!");
+      throw new HttpError("User already exists!", 409);
     }
     throw error;
   }

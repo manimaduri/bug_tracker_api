@@ -11,8 +11,8 @@ router.post("/register", async (req, res) => {
     const result = await userService.createUser(user);
     successResponse(res, result, 201);
   } catch (error: any) {
-    console.log("Error creating user:", error.stack);
-    errorResponse(res, error, error?.message ?? "Registration Failed! Please try again.",error.statusCode || 500);
+    console.error("Error creating user........:", error.stack);
+    errorResponse(res, error, error?.message ?? "Registration Failed! Please try again.",error?.statusCode || 500);
   }
 });
 

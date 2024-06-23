@@ -1,5 +1,6 @@
 import { Employee } from "../models/Employee";
 import { Transaction } from "sequelize";
+import { HttpError } from "../utils/responseHandler";
 
 export class EmployeeRepository {
   async createEmployee(
@@ -10,7 +11,7 @@ export class EmployeeRepository {
       const result = await Employee.create(employeeData, options);
       return result;
     } catch (error) {
-      throw new Error(`Error creating employee: ${error}`);
+      throw new HttpError(`Error creating employee: ${error}`);
     }
   }
 }

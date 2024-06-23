@@ -1,5 +1,6 @@
 import { Organization } from "../models/Organization";
 import { Transaction } from "sequelize";
+import { HttpError } from "../utils/responseHandler";
 
 export class OrganizationRepository {
   async createOrganization(
@@ -11,23 +12,28 @@ export class OrganizationRepository {
       return result;
     } catch (error) {
       console.log("Error creating organization:", error);
-      throw new Error(`Error creating organization: ${error}`);
+      throw new HttpError(`Error creating organization: ${error}`);
     }
   }
 
   async findOrganizationByUserId(userId: string) {
-    const organization = await Organization.findOne({
-      where: {
-        userId: userId
+    try {
+      const organization = await Organization.findOne({
+        where: {
+          userId: userId
+        }
+      });
+  
+      if (!organization) {
+        console.log("No organization found with the given user ID");
+        throw new HttpError("No organization found with the given user ID", 404);
       }
-    });
-
-    if (!organization) {
-      console.log("No organization found with the given user ID");
-      throw new Error("No organization found with the given user ID");
+  
+      return organization;
+    } catch (error) {
+      console.log("Error finding organization by user ID:", error);
+      throw new HttpError(`Error finding organization by user ID: ${error}`);
     }
-
-    return organization;
   }
 
   
