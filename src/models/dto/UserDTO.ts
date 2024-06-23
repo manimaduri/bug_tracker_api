@@ -11,6 +11,7 @@ import {
 
 export enum UserRole {
   ORGANIZATION = "organization",
+  MANAGER = "manager",
   EMPLOYEE = "employee",
 }
 
