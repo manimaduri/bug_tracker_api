@@ -128,16 +128,9 @@ export class AuthService {
     if (!organizationUser?.id) {
       throw new HttpError("No organization found with the given email domain", 404);
     }
-    const organization =
-      await this.organizationRepository.findOrganizationByUserId(
-        organizationUser.id
-      );
-    if (!organization) {
-      throw new HttpError("No organization exists with the same email domain", 404);
-    }
     const employeeDTO = plainToClass(EmployeeDTO, {
       userId: createdUser.id,
-      organizationId: organization.id,
+      organizationId: organizationUser?.Organization.id,
       ...user,
     });
     await validateDTO(employeeDTO);

@@ -16,6 +16,7 @@ import { Project } from "./Project";
 import { UserProject } from "./UserProject";
 import { Bug } from "./Bug";
 import { Organization } from "./Organization";
+import { Employee } from "./Employee";
 
 @Table({ tableName: "users" })
 export class User extends Model {
@@ -56,16 +57,19 @@ export class User extends Model {
 
   @HasOne(()=> Organization, { foreignKey: 'userId', as: 'organization' })
   organization!: Organization;
+
+  @HasOne(()=> Employee, { foreignKey: 'userId', as: 'employee' })
+  employee!: Employee;
   
   @HasMany(() => Bug, { 
     foreignKey: 'assignedTo', 
-    as: 'AssignedBugs', 
+    as: 'assignedBugs', 
   })
   assignedBugs!: Bug[];
   
   @HasMany(() => Bug, { 
     foreignKey: 'createdBy', 
-    as: 'CreatedBugs', 
+    as: 'createdBugs', 
   })
   createdBugs!: Bug[];
 }

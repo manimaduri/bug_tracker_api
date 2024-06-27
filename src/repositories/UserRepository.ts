@@ -2,6 +2,7 @@ import { UserRole } from "../models/dto/UserDTO";
 import { User } from "../models/User";
 import { Op, Transaction, UniqueConstraintError } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
+import { Organization } from "../models/Organization";
 
 export class UserRepository {
   async createUser(
@@ -29,6 +30,7 @@ export class UserRepository {
           },
           role: UserRole.ORGANIZATION,
         },
+        include: [{ model: Organization }],
       });
       
       return organizationUser;
