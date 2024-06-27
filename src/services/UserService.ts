@@ -25,7 +25,7 @@ export class UserService {
         organizationId
       );
     } catch (error: any) {
-      console.error("Error fetching employees........:", error.stack);
+      console.error("Error fetching employees........:", error?.stack);
       throw new HttpError(
         error?.message ?? "Failed to fetch employees.",
         error?.statusCode || 500

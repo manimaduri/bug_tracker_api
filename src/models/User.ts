@@ -9,11 +9,13 @@ import {
   AllowNull,
   BelongsToMany,
   HasMany,
+  HasOne,
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 import { Project } from "./Project";
 import { UserProject } from "./UserProject";
 import { Bug } from "./Bug";
+import { Organization } from "./Organization";
 
 @Table({ tableName: "users" })
 export class User extends Model {
@@ -52,6 +54,9 @@ export class User extends Model {
   @BelongsToMany(() => Project, { through: () => UserProject, onDelete: "CASCADE" })
   projects!: Project[];
 
+  @HasOne(()=> Organization, { foreignKey: 'userId', as: 'organization' })
+  organization!: Organization;
+  
   @HasMany(() => Bug, { 
     foreignKey: 'assignedTo', 
     as: 'AssignedBugs', 

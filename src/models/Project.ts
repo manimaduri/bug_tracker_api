@@ -10,6 +10,7 @@ import {
   Default,
   BelongsToMany,
   HasMany,
+  Unique,
 } from "sequelize-typescript";
 import { Organization } from "./Organization";
 import { v4 as uuidv4 } from "uuid";
@@ -28,6 +29,7 @@ export class Project extends Model {
   @Column(DataType.UUID)
   createdBy!: string;
 
+  @Unique
   @AllowNull(false)
   @Column(DataType.STRING)
   projectName!: string;
