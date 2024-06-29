@@ -12,6 +12,8 @@ import { UserProject } from './UserProject';
 // const fetchSecret = require("../utility/secretManager"); for later use
 dotenv.config();
 
+let sequelizeInstance: Sequelize | null = null;
+
 async function initDB(): Promise<Sequelize> {
   try {
     // const secretValue = await fetchSecret(); for future use
@@ -53,6 +55,8 @@ async function initDB(): Promise<Sequelize> {
 
     await sequelize.sync({  alter: false  });
 
+    sequelizeInstance = sequelize; // Assign the initialized Sequelize instance
+
     return sequelize; // Return the Sequelize instance
   } catch (error) {
     console.error("Error initializing database:", error);
@@ -60,6 +64,13 @@ async function initDB(): Promise<Sequelize> {
   }
 }
 
-export { initDB };
+function getSequelizeInstance(): Sequelize {
+  if (!sequelizeInstance) {
+    throw new Error("Sequelize has not been initialized yet.");
+  }
+  return sequelizeInstance;
+}
+
+export { initDB,getSequelizeInstance };
 
 

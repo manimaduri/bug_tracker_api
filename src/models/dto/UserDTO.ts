@@ -73,6 +73,6 @@ export class CreateUserDTO {
   country?: string;
 
   @IsNotEmpty()
-  @IsEnum(UserRole)
+  @IsEnum(UserRole, { message: "Invalid role" })
   role!: UserRole;
 }

@@ -8,11 +8,22 @@ import { plainToClass } from "class-transformer";
 import { CreateOrganizationDTO } from "../models/dto/OrganizationDTO";
 import { EmployeeDTO } from "../models/dto/EmployeeDTO";
 import { validateDTO } from "../utils/validateDTO";
-import { initDB } from "../models";
+import { getSequelizeInstance } from "../models";
 import { CreateUserDTO, UserRole } from "../models/dto/UserDTO";
 import { UniqueConstraintError, Transaction } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
 import bcrypt from "bcrypt";
+
+type ResponseType = {
+  user: {
+    id: string;
+    role: string;
+    profilePicture: string | undefined;
+  };
+  token: string;
+  organization?: any; // Consider defining a more specific type instead of 'any'
+  employee?: any; // Consider defining a more specific type instead of 'any'
+};
 
 export class AuthService {
   private userRepository: UserRepository;
@@ -26,8 +37,9 @@ export class AuthService {
   }
 
   async createUser(user: Partial<User>) {
-    const sequelize = await initDB();
+    const sequelize = getSequelizeInstance();
     const transaction = await sequelize.transaction();
+    let additionalData = null; // Variable to hold organization or employee data
     try {
       const userDTO = await this.prepareUserDTO(user);
       const createdUser = await this.userRepository.createUser(userDTO, {
@@ -36,18 +48,23 @@ export class AuthService {
       const token = this.generateToken(createdUser, userDTO.role);
 
       if (user.role === UserRole.ORGANIZATION) {
-        await this.handleOrganizationUser(
+        additionalData = await this.handleOrganizationUser(
           user,
           userDTO,
           createdUser,
           transaction
         );
       } else if (user.role === UserRole.EMPLOYEE) {
-        await this.handleEmployeeUser(user, userDTO, createdUser, transaction);
+        additionalData = await this.handleEmployeeUser(
+          user,
+          userDTO,
+          createdUser,
+          transaction
+        );
       }
 
       await transaction.commit();
-      return this.formatResponse(createdUser, token);
+      return this.formatResponse(createdUser, token, additionalData);
     } catch (error) {
       await transaction.rollback();
       this.handleError(error);
@@ -57,17 +74,29 @@ export class AuthService {
   async authenticateUser(email: string, password: string): Promise<any> {
     const user = await this.userRepository.findUserByEmail(email);
     if (!user) {
-      throw new HttpError("User not found", 404);
+      throw new HttpError("Please register before login", 404);
     }
-  
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new HttpError("Invalid Credentials", 401);
     }
-  
+
     const token = this.generateToken(user, user.role);
-  
-    return this.formatResponse(user, token);
+
+    // Fetch organization or employee data based on the user's role
+    let additionalData = null;
+
+    if (user.role === UserRole.ORGANIZATION) {
+      additionalData =
+        await this.organizationRepository.findOrganizationByUserId(user.id);
+    } else if (user.role === UserRole.EMPLOYEE) {
+      additionalData = await this.employeeRepository.findEmployeeByUserId(
+        user.id
+      );
+    }
+
+    return this.formatResponse(user, token, additionalData);
   }
 
   async prepareUserDTO(user: Partial<User>) {
@@ -104,15 +133,21 @@ export class AuthService {
         userDTO.email.split("@")[1]
       );
     if (organizationExists) {
-      throw new HttpError("Organization already exists",400);
+      throw new HttpError("Organization already exists", 400);
     }
     try {
-      await this.organizationRepository.createOrganization(organizationDTO, {
-        transaction,
-      });
+      return await this.organizationRepository.createOrganization(
+        organizationDTO,
+        {
+          transaction,
+        }
+      );
     } catch (error: any) {
       console.log("Failed to create organization", error?.message);
-      throw new HttpError(error?.message || "Failed to create organization ", error?.statusCode || 500);
+      throw new HttpError(
+        error?.message || "Failed to create organization ",
+        error?.statusCode || 500
+      );
     }
   }
 
@@ -126,26 +161,32 @@ export class AuthService {
     const organizationUser =
       await this.userRepository.findOrganizationUserByEmailDomain(emailDomain);
     if (!organizationUser?.id) {
-      throw new HttpError("No organization found with the given email domain", 404);
+      throw new HttpError(
+        "No organization found with the given email domain",
+        404
+      );
     }
     const employeeDTO = plainToClass(EmployeeDTO, {
       userId: createdUser.id,
-      organizationId: organizationUser?.Organization.id,
+      organizationId: organizationUser?.organization.id,
       ...user,
     });
     await validateDTO(employeeDTO);
     try {
-      await this.employeeRepository.createEmployee(employeeDTO, {
+      return await this.employeeRepository.createEmployee(employeeDTO, {
         transaction,
       });
     } catch (error: any) {
       console.log("Failed to create employee", error?.message);
-      throw new HttpError(error?.message || "Failed to create employee ", error?.statusCode || 500);
+      throw new HttpError(
+        error?.message || "Failed to create employee ",
+        error?.statusCode || 500
+      );
     }
   }
 
-  formatResponse(createdUser: User, token: string) {
-    return {
+  formatResponse(createdUser: User, token: string, additionalData: any = null) {
+    const response: ResponseType = {
       user: {
         id: createdUser.id,
         role: createdUser.role,
@@ -153,6 +194,15 @@ export class AuthService {
       },
       token,
     };
+
+    // Include additional data based on the user's role
+    if (createdUser.role === UserRole.ORGANIZATION && additionalData) {
+      response.organization = additionalData; // Assuming additionalData is the organization data
+    } else if (createdUser.role === UserRole.EMPLOYEE && additionalData) {
+      response.employee = additionalData; // Assuming additionalData is the employee data
+    }
+
+    return response;
   }
 
   handleError(error: any) {
