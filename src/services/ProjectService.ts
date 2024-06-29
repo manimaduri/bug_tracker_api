@@ -7,8 +7,7 @@ import { HttpError } from "../utils/responseHandler";
 import { Request } from "express";
 import { validateDTO } from "../utils/validateDTO";
 import { UserProjectRepository } from "../repositories/UserProjectRepository";
-import { User } from "../models/User";
-import { Organization } from "../models/Organization";
+import { getSequelizeInstance } from "../models";
 
 export class ProjectService {
   private projectRepository: ProjectRepository;
@@ -24,32 +23,44 @@ export class ProjectService {
   }
 
   async createProject(req: Request) {
+    const sequelize = getSequelizeInstance(); // Obtain the Sequelize instance
+    const transaction = await sequelize.transaction(); // Start a transaction
     try {
       const userId = req.user!.userId;
-      // Fetch the user's organization ID from the User model
-    const user = await User.findByPk(userId, {
-      include: [{ model: Organization }],
-    });
 
-    const organizationId = user?.organization?.id; // Assuming the User model has a relation to Organization
-    if (!organizationId) {
-      throw new Error('User organization not found');
-    }
+      const organization =
+        await this.organizationRepository.findOrganizationByUserId(userId); // Assuming the User model has a relation to Organization
+      if (!organization) {
+        throw new Error("User organization not found");
+      }
 
-      const projectDTO = plainToClass(ProjectDTO,req.body);
+      const projectDTO = plainToClass(ProjectDTO, req.body);
       await validateDTO(projectDTO);
 
-      projectDTO.createdBy = organizationId;
-      const createdProject = await this.projectRepository.createProject(projectDTO);
+      projectDTO.createdBy = organization.id;
+      const createdProject = await this.projectRepository.createProject(
+        projectDTO,
+        transaction
+      );
       const userIds = req.body.userIds;
-      if(userIds){
-        for(const userId of userIds){
-          await this.userProjectRepository.associateUserWithProject(userId, createdProject.id);
+      if (userIds && userIds.length > 0) {
+        for (const userId of userIds) {
+          await this.userProjectRepository.associateUserWithProject(
+            userId,
+            createdProject.id,
+            transaction
+          );
         }
       }
+
+      await transaction.commit(); // Commit the transaction
       return createdProject;
     } catch (error: any) {
-      throw new HttpError(error?.message ?? `Error creating project`);
+      await transaction.rollback(); // Roll back the transaction in case of an error
+      throw new HttpError(
+        error?.message ?? `Error creating project`,
+        error?.statusCode ?? 500
+      );
     }
   }
 

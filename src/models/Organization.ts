@@ -22,7 +22,7 @@ export class Organization extends Model {
   id!: string;
 
   @ForeignKey(() => User)
-  @Column(DataType.UUID)
+  @Column({ type: DataType.UUID, unique: true })
   userId!: string;
 
   @AllowNull(false)

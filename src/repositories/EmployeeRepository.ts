@@ -1,6 +1,7 @@
 import { Employee } from "../models/Employee";
 import { Transaction } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
+import { User } from "../models/User";
 
 export class EmployeeRepository {
   async createEmployee(
@@ -16,15 +17,29 @@ export class EmployeeRepository {
   }
 
   async findEmployeesByOrganizationId(organizationId: string) {
-    try{
+    try {
+      const employees = await Employee.findAll({
+        where: { organizationId },
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: { exclude: ['password'] } // Exclude password from the response
+        }]
+      });
 
-        const employees = await Employee.findAll({ where : { organizationId }});
-
-        return employees;
-
-    }catch(error){
-        console.error("Error finding employees by organization ID:", error);
-        throw new HttpError(`Error finding employees by organization ID`);
+      return employees;
+    } catch (error) {
+      console.error("Error finding employees by organization ID:", error);
+      throw new HttpError(`Error finding employees by organization ID`);
     }
-}
+  }
+
+  async findEmployeeByUserId(userId: string) {
+    try {
+      return await Employee.findOne({ where: { userId } });
+    } catch (err) {
+      console.log("Error finding employee", err);
+      throw new HttpError("Unable to find Employee");
+    }
+  }
 }

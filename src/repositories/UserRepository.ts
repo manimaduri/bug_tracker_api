@@ -54,4 +54,14 @@ export class UserRepository {
       throw new HttpError(`Error finding user: ${error}`);
     }
   }
+
+  async findUserById(id: string) {
+    try {
+      const user = await User.findByPk(id);
+      return user;
+    } catch (error) {
+      console.error("Error finding user by ID:", error);
+      throw new HttpError(`Error finding user`);
+    }
+  }
 }
