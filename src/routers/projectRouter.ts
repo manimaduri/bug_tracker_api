@@ -14,7 +14,7 @@ router.post("/", authMiddleware, async (req, res) => {
     const project = await projectService.createProject(req);
     successResponse(res, project, 201);
   } catch (error: any) {
-    errorResponse(res, error, error?.message ?? "Failed to create project");
+    errorResponse(res, error, error?.message ?? "Failed to create project",error?.statusCode ?? 500);
   }
 });
 

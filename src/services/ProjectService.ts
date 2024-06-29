@@ -43,7 +43,7 @@ export class ProjectService {
         transaction
       );
       const userIds = req.body.userIds;
-      if (userIds && userIds.length > 0) {
+      if (userIds?.length > 0) {
         for (const userId of userIds) {
           await this.userProjectRepository.associateUserWithProject(
             userId,

@@ -4,7 +4,6 @@ import { Transform } from "class-transformer";
 import {
   IsDate,
   IsString,
-  IsUUID,
   Matches,
   MaxLength,
   MinLength,
@@ -45,7 +44,7 @@ export class ProjectDTO {
 
   @IsString()
   @MinLength(1)
-  @MaxLength(255)
+  @MaxLength(10000)
   @Matches(/\S/, { message: "Description must contain at least one letter" })
   description!: string;
 

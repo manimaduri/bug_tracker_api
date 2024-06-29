@@ -24,9 +24,10 @@ export class Bug extends Model {
   @Column(DataType.UUID)
   projectId!: string;
 
+  @AllowNull(true)
   @ForeignKey(() => User)
   @Column(DataType.UUID)
-  assignedTo!: string;
+  assignedTo?: string;
 
   @ForeignKey(() => User)
   @Column(DataType.UUID)
@@ -59,9 +60,9 @@ export class Bug extends Model {
   @BelongsTo(() => Project, { onDelete: "CASCADE" })
   project!: Project;
 
-  @BelongsTo(() => User, { as: "AssignedUser", onDelete: "CASCADE" })
+  @BelongsTo(() => User, { as: "assignedUser", onDelete: "CASCADE" })
   assignedUser!: User;
 
-  @BelongsTo(() => User, { as: "Creator", onDelete: "CASCADE" })
-  creator!: User;
+  @BelongsTo(() => User, { as: "createdUser", onDelete: "CASCADE" })
+  createdUser!: User;
 }
