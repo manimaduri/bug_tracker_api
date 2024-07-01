@@ -7,31 +7,9 @@ import {
   Length,
   MaxLength,
 } from "class-validator";
+import { BugClassification, BugPriority, BugStatus } from "../Bug";
 
-enum Classification {
-  Bug = "Bug",
-  Enhancement = "Enhancement",
-  Feature = "Feature",
-  Task = "Task",
-  Question = "Question",
-  Documentation = "Documentation",
-  Security = "Security",
-  Performance = "Performance",
-  Test = "Test",
-  Support = "Support",
-}
 
-enum Priority {
-  High = "High",
-  Low = "Low",
-  Medium = "Medium",
-}
-
-enum Status {
-  Open = "Open",
-  Closed = "Closed",
-  InProgress = "In Progress",
-}
 
 export class BugDTO {
   @IsUUID()
@@ -60,13 +38,13 @@ export class BugDTO {
   @IsOptional()
   image?: string;
 
-  @IsEnum(Classification, { message: "Invalid classification" })
+  @IsEnum(BugClassification, { message: "Invalid classification" })
   @IsOptional()
-  classification?: Classification;
+  classification?: BugClassification;
 
-  @IsEnum(Priority, { message: "Invalid priority" })
-  priority!: Priority;
+  @IsEnum(BugPriority, { message: "Invalid priority" })
+  priority!: BugPriority;
 
-  @IsEnum(Status, { message: "Invalid status" })
-  status!: Status;
+  @IsEnum(BugStatus, { message: "Invalid status" })
+  status!: BugStatus;
 }

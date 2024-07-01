@@ -13,6 +13,31 @@ import { Project } from "./Project";
 import { User } from "./User";
 import { v4 as uuidv4 } from "uuid";
 
+export enum BugClassification {
+  Bug = "Bug",
+  Enhancement = "Enhancement",
+  Feature = "Feature",
+  Task = "Task",
+  Question = "Question",
+  Documentation = "Documentation",
+  Security = "Security",
+  Performance = "Performance",
+  Test = "Test",
+  Support = "Support",
+}
+
+export enum BugPriority {
+  High = "High",
+  Low = "Low",
+  Medium = "Medium",
+}
+
+export enum BugStatus {
+  Open = "Open",
+  Closed = "Closed",
+  InProgress = "In Progress",
+}
+
 @Table({ tableName: "bugs" })
 export class Bug extends Model {
   @PrimaryKey
@@ -46,15 +71,15 @@ export class Bug extends Model {
   image?: string;
 
   @AllowNull(true)
-  @Column(DataType.STRING)
+  @Column({type : DataType.ENUM, values: Object.values(BugClassification), defaultValue: BugClassification.Bug})
   classification?: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column({type:DataType.STRING, values : Object.values(BugPriority), defaultValue: BugPriority.Medium})
   priority!: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column({type:DataType.STRING, values : Object.values(BugStatus), defaultValue: BugStatus.Open})
   status!: string;
 
   @BelongsTo(() => Project, { onDelete: "CASCADE" })

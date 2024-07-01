@@ -10,7 +10,12 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
+  IsEnum
 } from "class-validator";
+import { ProjectStatus } from "../Project";
+
+
+
 
 // Custom decorator function
 function IsFutureDate(validationOptions?: ValidationOptions) {
@@ -63,7 +68,7 @@ export class ProjectDTO {
   @IsFutureDate({ message: "Deadline must be a future date" })
   deadline?: Date;
 
-  @IsString()
+  @IsEnum(ProjectStatus, { message: "Invalid status" })
   status?: string;
 
   createdBy?: string;

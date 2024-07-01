@@ -18,6 +18,18 @@ import { User } from "./User";
 import { UserProject } from "./UserProject";
 import { Bug } from "./Bug";
 
+export enum ProjectStatus {
+  NotStarted = "Not Started",
+  InProgress = "In Progress",
+  OnHold = "On Hold",
+  Completed = "Completed",
+  Cancelled = "Cancelled",
+  Review = "Review",
+  Planning = "Planning",
+  Deployed = "Deployed",
+  Archived = "Archived",
+}
+
 @Table({ tableName: "projects" })
 export class Project extends Model {
   @PrimaryKey
@@ -35,7 +47,11 @@ export class Project extends Model {
   projectName!: string;
 
   @AllowNull(false)
-  @Column(DataType.STRING)
+  @Column({
+    type: DataType.ENUM,
+    values: Object.values(ProjectStatus),
+    defaultValue: ProjectStatus.NotStarted,
+  })
   status!: string;
 
   @Column(DataType.TEXT)
