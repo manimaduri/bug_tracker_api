@@ -1,4 +1,5 @@
 import { Bug } from "../models/Bug";
+import { User } from "../models/User";
 import { HttpError } from "../utils/responseHandler";
 
 export class BugRepository {
@@ -13,7 +14,18 @@ export class BugRepository {
 
   async findBugsByProjectId(projectId: string) {
     try {
-      const bugs = await Bug.findAll({ where: { projectId } });
+      const bugs = await Bug.findAll({ where: { projectId }, include: [
+        {
+          model: User,
+          as: 'createdUser',
+          attributes: { exclude: ['password'] }
+        },
+        {
+          model: User,
+          as: 'assignedUser',
+          attributes: { exclude: ['password'] }
+        }
+      ] });
 
       return bugs;
     } catch (error) {

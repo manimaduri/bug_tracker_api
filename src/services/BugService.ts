@@ -38,6 +38,7 @@ export class BugService {
 
   async findBugsByProjectId(projectId: string) {
     try {
+      await this.projectRepository.findProjectById(projectId);
       return await this.bugRepository.findBugsByProjectId(projectId);
     } catch (error: any) {
       throw new HttpError(
