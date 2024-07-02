@@ -18,12 +18,12 @@ export class BugRepository {
         {
           model: User,
           as: 'createdUser',
-          attributes: { exclude: ['password'] }
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
         },
         {
           model: User,
           as: 'assignedUser',
-          attributes: { exclude: ['password'] }
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
         }
       ] });
 
