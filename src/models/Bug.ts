@@ -70,17 +70,16 @@ export class Bug extends Model {
   @Column(DataType.STRING)
   image?: string;
 
-  @AllowNull(true)
   @Column({type : DataType.ENUM, values: Object.values(BugClassification), defaultValue: BugClassification.Bug})
-  classification?: string;
+  classification!: BugClassification;
 
   @AllowNull(false)
   @Column({type:DataType.STRING, values : Object.values(BugPriority), defaultValue: BugPriority.Medium})
-  priority!: string;
+  priority!: BugPriority;
 
   @AllowNull(false)
   @Column({type:DataType.STRING, values : Object.values(BugStatus), defaultValue: BugStatus.Open})
-  status!: string;
+  status!: BugStatus;
 
   @BelongsTo(() => Project, { onDelete: "CASCADE" })
   project!: Project;

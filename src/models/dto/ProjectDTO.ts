@@ -69,7 +69,7 @@ export class ProjectDTO {
   deadline?: Date;
 
   @IsEnum(ProjectStatus, { message: "Invalid status" })
-  status?: string;
+  status!: ProjectStatus;
 
   createdBy?: string;
 

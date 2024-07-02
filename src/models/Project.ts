@@ -52,7 +52,7 @@ export class Project extends Model {
     values: Object.values(ProjectStatus),
     defaultValue: ProjectStatus.NotStarted,
   })
-  status!: string;
+  status!: ProjectStatus;
 
   @Column(DataType.TEXT)
   description?: string;
