@@ -10,95 +10,110 @@ export class BugRepository {
       const result = await Bug.create(bugData);
       return result;
     } catch (error) {
+      console.error(error);
       throw new HttpError(`Error creating bug`);
     }
   }
 
   async findBugsByProjectId(projectId: string) {
     try {
-      const bugs = await Bug.findAll({ where: { projectId }, include: [
-        {
-          model: User,
-          as: 'createdUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        },
-        {
-          model: User,
-          as: 'assignedUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        }
-      ] });
+      const bugs = await Bug.findAll({
+        where: { projectId },
+        include: [
+          {
+            model: User,
+            as: "createdUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+          {
+            model: User,
+            as: "assignedUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+        ],
+      });
 
       return bugs;
     } catch (error) {
+      console.error(error);
       throw new HttpError(`Error finding bugs by project ID`);
     }
   }
 
   async findBugById(bugId: string) {
     try {
-      const bug = await Bug.findByPk( bugId , {include: [  
-        {
-          model: User,
-          as: 'createdUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        },
-        {
-          model: User,
-          as: 'assignedUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        },
-        {
-          model : Project,
-          as : 'project',
-          attributes: { exclude: ["createdAt","updatedAt"] 
-          }
-        }
-      ] });
+      const bug = await Bug.findByPk(bugId, {
+        include: [
+          {
+            model: User,
+            as: "createdUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+          {
+            model: User,
+            as: "assignedUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+          {
+            model: Project,
+            as: "project",
+            attributes: { exclude: ["createdAt", "updatedAt"] },
+          },
+        ],
+      });
       return bug;
     } catch (error) {
+      console.error(error);
       throw new HttpError(`Error finding bug by ID`);
     }
   }
 
   async findBugsAssignedToUsers(userIds: string[]) {
     try {
-      const bugs = await Bug.findAll({ where: { assignedTo: {[Op.in] : userIds} }, include: [
-        {
-          model: User,
-          as: 'createdUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        },
-        {
-          model: User,
-          as: 'assignedUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        }
-      ] });
+      const bugs = await Bug.findAll({
+        where: { assignedTo: { [Op.in]: userIds } },
+        include: [
+          {
+            model: User,
+            as: "createdUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+          {
+            model: User,
+            as: "assignedUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+        ],
+      });
 
       return bugs;
     } catch (error) {
+      console.error(error);
       throw new HttpError(`Error finding bugs by user ID`);
     }
   }
 
   async findBugsCreatedByUsers(userIds: string[]) {
     try {
-      const bugs = await Bug.findAll({ where: { createdBy: {[Op.in] : userIds} }, include: [
-        {
-          model: User,
-          as: 'createdUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        },
-        {
-          model: User,
-          as: 'assignedUser',
-          attributes: { exclude: ['password',"createdAt","updatedAt"] }
-        }
-      ] });
+      const bugs = await Bug.findAll({
+        where: { createdBy: { [Op.in]: userIds } },
+        include: [
+          {
+            model: User,
+            as: "createdUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+          {
+            model: User,
+            as: "assignedUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+        ],
+      });
 
       return bugs;
     } catch (error) {
+      console.error(error);
       throw new HttpError(`Error finding bugs by user ID`);
     }
   }

@@ -1,5 +1,5 @@
 import { Organization } from "../models/Organization";
-import { Transaction } from "sequelize";
+import { Transaction, UniqueConstraintError } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
 
 export class OrganizationRepository {
@@ -11,8 +11,15 @@ export class OrganizationRepository {
       const result = await Organization.create(organizationData, options);
       return result;
     } catch (error) {
+      if(error instanceof UniqueConstraintError){
+        console.log("Organization with the given name already exists");
+        throw new HttpError(
+          "Organization with the given name already exists",
+          409
+        );
+      }
       console.log("Error creating organization:", error);
-      throw new HttpError(`Error creating organization: ${error}`);
+      throw new HttpError(`Error creating organization`);
     }
   }
 

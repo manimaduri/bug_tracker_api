@@ -50,7 +50,11 @@ export class BugService {
 
   async findBugById(bugId: string) {
     try {
-      return await this.bugRepository.findBugById(bugId);
+      const bug = await this.bugRepository.findBugById(bugId);
+      if(!bug){
+        throw new HttpError("Bug not found", 404);
+      }
+      return bug;
     } catch (error: any) {
       throw new HttpError(
         error?.message ?? "Error finding bug by ID",
