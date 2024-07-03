@@ -9,6 +9,7 @@ import {
   PrimaryKey,
   Default,
   HasMany,
+  Unique,
 } from "sequelize-typescript";
 import { User } from "./User";
 import { v4 as uuidv4 } from "uuid";
@@ -26,6 +27,7 @@ export class Organization extends Model {
   userId!: string;
 
   @AllowNull(false)
+  @Unique
   @Column(DataType.STRING)
   companyName!: string;
 

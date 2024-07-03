@@ -74,19 +74,19 @@ export class Bug extends Model {
   classification!: BugClassification;
 
   @AllowNull(false)
-  @Column({type:DataType.STRING, values : Object.values(BugPriority), defaultValue: BugPriority.Medium})
+  @Column({type:DataType.ENUM, values : Object.values(BugPriority), defaultValue: BugPriority.Medium})
   priority!: BugPriority;
 
   @AllowNull(false)
-  @Column({type:DataType.STRING, values : Object.values(BugStatus), defaultValue: BugStatus.Open})
+  @Column({type:DataType.ENUM, values : Object.values(BugStatus), defaultValue: BugStatus.Open})
   status!: BugStatus;
 
   @BelongsTo(() => Project, { onDelete: "CASCADE" })
   project!: Project;
 
-  @BelongsTo(() => User, { as: "assignedUser", onDelete: "CASCADE" })
+  @BelongsTo(() => User, { as: "assignedUser", foreignKey : 'assignedTo', onDelete: "CASCADE" })
   assignedUser!: User;
 
-  @BelongsTo(() => User, { as: "createdUser", onDelete: "CASCADE" })
+  @BelongsTo(() => User, { as: "createdUser",foreignKey : 'createdBy', onDelete: "CASCADE" })
   createdUser!: User;
 }
