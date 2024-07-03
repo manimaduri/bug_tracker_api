@@ -34,4 +34,18 @@ router.get("/getBugsByProject/:projectId",authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/:bugId",authMiddleware, async (req, res) => {
+  try {
+    const bug = await bugService.findBugById(req.params.bugId);
+    successResponse(res, bug);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to find bug",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
 export default router;

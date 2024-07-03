@@ -47,4 +47,15 @@ export class BugService {
       );
     }
   }
+
+  async findBugById(bugId: string) {
+    try {
+      return await this.bugRepository.findBugById(bugId);
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Error finding bug by ID",
+        error?.statusCode ?? 500
+      );
+    }
+  }
 }

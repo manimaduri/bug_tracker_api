@@ -1,4 +1,5 @@
 import { Bug } from "../models/Bug";
+import { Project } from "../models/Project";
 import { User } from "../models/User";
 import { HttpError } from "../utils/responseHandler";
 
@@ -30,6 +31,32 @@ export class BugRepository {
       return bugs;
     } catch (error) {
       throw new HttpError(`Error finding bugs by project ID`);
+    }
+  }
+
+  async findBugById(bugId: string) {
+    try {
+      const bug = await Bug.findByPk( bugId , {include: [  
+        {
+          model: User,
+          as: 'createdUser',
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
+        },
+        {
+          model: User,
+          as: 'assignedUser',
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
+        },
+        {
+          model : Project,
+          as : 'project',
+          attributes: { exclude: ["createdAt","updatedAt"] 
+          }
+        }
+      ] });
+      return bug;
+    } catch (error) {
+      throw new HttpError(`Error finding bug by ID`);
     }
   }
 }
