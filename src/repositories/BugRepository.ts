@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { Bug } from "../models/Bug";
 import { Project } from "../models/Project";
 import { User } from "../models/User";
@@ -57,6 +58,48 @@ export class BugRepository {
       return bug;
     } catch (error) {
       throw new HttpError(`Error finding bug by ID`);
+    }
+  }
+
+  async findBugsAssignedToUsers(userIds: string[]) {
+    try {
+      const bugs = await Bug.findAll({ where: { assignedTo: {[Op.in] : userIds} }, include: [
+        {
+          model: User,
+          as: 'createdUser',
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
+        },
+        {
+          model: User,
+          as: 'assignedUser',
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
+        }
+      ] });
+
+      return bugs;
+    } catch (error) {
+      throw new HttpError(`Error finding bugs by user ID`);
+    }
+  }
+
+  async findBugsCreatedByUsers(userIds: string[]) {
+    try {
+      const bugs = await Bug.findAll({ where: { createdBy: {[Op.in] : userIds} }, include: [
+        {
+          model: User,
+          as: 'createdUser',
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
+        },
+        {
+          model: User,
+          as: 'assignedUser',
+          attributes: { exclude: ['password',"createdAt","updatedAt"] }
+        }
+      ] });
+
+      return bugs;
+    } catch (error) {
+      throw new HttpError(`Error finding bugs by user ID`);
     }
   }
 }

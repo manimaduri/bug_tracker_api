@@ -48,4 +48,34 @@ router.get("/:bugId",authMiddleware, async (req, res) => {
   }
 });
 
+router.post("/findBugsAssignedToUsers",authMiddleware, async (req, res) => {
+  try {
+    const userIds = req.body.userIds;
+    const bugs = await bugService.findBugsAssignedToUsers(userIds);
+    successResponse(res, bugs);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to find bugs assigned to users",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
+router.post("/findBugsCreatedByUsers",authMiddleware, async (req, res) => {
+  try {
+    const userIds = req.body.userIds;
+    const bugs = await bugService.findBugsCreatedByUsers(userIds);
+    successResponse(res, bugs);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to find bugs created by users",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
 export default router;

@@ -58,4 +58,26 @@ export class BugService {
       );
     }
   }
+
+  async findBugsAssignedToUsers(userIds: string[]) {
+    try {
+      return await this.bugRepository.findBugsAssignedToUsers(userIds);
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Error finding bugs assigned to user",
+        error?.statusCode ?? 500
+      );
+    }
+  }
+
+  async findBugsCreatedByUsers(userIds: string[]) {
+    try {
+      return await this.bugRepository.findBugsCreatedByUsers(userIds);
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Error finding bugs created by user",
+        error?.statusCode ?? 500
+      );
+    }
+  }
 }
