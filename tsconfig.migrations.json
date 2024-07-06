@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json", // Extend the base TypeScript configuration
+    "compilerOptions": {
+      "outDir": "./dist/migrations", // Specify a separate output directory for compiled migration files
+      "rootDir": "./migrations", // Set the root directory to the migrations folder
+      "noEmit": false // Ensure TypeScript emits compiled JavaScript files for migrations
+    },
+    "include": ["migrations/**/*.ts"], // Include only TypeScript files in the migrations directory
+    "exclude": [] // Exclude nothing explicitly, overrides base config exclude if necessary
+  }
