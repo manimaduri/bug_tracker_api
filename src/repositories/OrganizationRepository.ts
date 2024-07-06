@@ -48,9 +48,9 @@ export class OrganizationRepository {
 
   async findOrganizationById(organizationId: string) {
     try {
-      const organization = await Organization.findOne({
-        where: { id: organizationId },
-      });
+      const organization = await Organization.findByPk(
+        organizationId
+      );
       return organization;
     } catch (error) {
       console.error("Error finding organization by ID:", error);

@@ -18,4 +18,14 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+//get projects of an organization
+router.get("/allProjects/:organizationId", authMiddleware, async (req, res) => {
+  try {
+    const projects = await projectService.getAllProjectsByOrganization(req.params.organizationId);
+    successResponse(res, projects, 200);
+  } catch (error: any) {
+    errorResponse(res, error, error?.message ?? "Failed to get projects",error?.statusCode ?? 500);
+  }
+});
+
 export default router;
