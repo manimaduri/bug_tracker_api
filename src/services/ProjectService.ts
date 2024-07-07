@@ -86,7 +86,7 @@ export class ProjectService {
   //all projects
   async getAllProjects(req: Request) {
     try {
-      return this.userProjectRepository.findProjectsByUserId(req.user!.userId);
+      return await this.userProjectRepository.findProjectsByUserId(req.user!.userId);
     } catch (error: any) {
       throw new HttpError(
         error?.message ?? "Failed to fetch projects.",
