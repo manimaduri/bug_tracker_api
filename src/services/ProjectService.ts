@@ -43,6 +43,7 @@ export class ProjectService {
         transaction
       );
       const userIds = req.body.userIds;
+      userIds?.push(userId); // Add the creator to the list of users
       if (userIds?.length > 0) {
         for (const userId of userIds) {
           await this.userProjectRepository.associateUserWithProject(
@@ -74,6 +75,18 @@ export class ProjectService {
       return this.projectRepository.findProjectsByOrganizationId(
         organizationId
       );
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Failed to fetch projects.",
+        error?.statusCode || 500
+      );
+    }
+  }
+
+  //all projects
+  async getAllProjects(req: Request) {
+    try {
+      return this.userProjectRepository.findProjectsByUserId(req.user!.userId);
     } catch (error: any) {
       throw new HttpError(
         error?.message ?? "Failed to fetch projects.",

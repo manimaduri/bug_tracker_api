@@ -2,6 +2,8 @@ import { Transaction } from "sequelize";
 import { UserProject } from "../models/UserProject";
 import { HttpError } from "../utils/responseHandler";
 import { UserRepository } from "./UserRepository";
+import { Project } from "../models/Project";
+import { Bug, BugStatus } from "../models/Bug";
 
 export class UserProjectRepository {
   private userRepository: UserRepository;
@@ -20,6 +22,64 @@ export class UserProjectRepository {
       return result;
     } catch (error : any) {
       throw new HttpError(error?.message ?? `Error associating user with project`, error?.statusCode ?? 500);
+    }
+  }
+
+  async isUserAssignedToProject(userId: string, projectId: string) {
+    try {
+      const result = await UserProject.findOne({ where: { userId, projectId } });
+      if (!result) {
+        throw new HttpError(`You are not assigned to the project`, 403);
+      }
+      return result;
+    } catch (error : any) {
+      console.error(error);
+      throw new HttpError(error?.message ?? `Error checking user assignment to project`, error?.statusCode ?? 500);
+    }
+  };
+
+  async findProjectsByUserId(userId: string) {
+    try {
+      const projects = await UserProject.findAll({
+        where: { userId },
+        include: [
+          {
+            model: Project,
+            as: "project",
+            include: [
+              {
+                model: Bug,
+                as: "bugs",
+                attributes: ["status"],
+                required: false, // Include projects even if they have no bugs
+              },
+            ],
+          },
+        ],
+      });
+  
+      const projectsWithDetails = projects.map((userProject) => {
+        const project = userProject.project.toJSON();
+        const bugs = project.bugs || [];
+        const totalBugsCount = bugs.length;
+        const openBugsCount = bugs.filter((bug : {status : BugStatus}) => bug.status === "Open").length;
+        const progress = totalBugsCount > 0 ? ((totalBugsCount - openBugsCount) / totalBugsCount) * 100 : 0;
+  
+        // Destructure the project object to omit the bugs property
+        const { bugs: _, ...projectDetails } = project;
+  
+        return {
+          ...projectDetails,
+          totalBugsCount,
+          openBugsCount,
+          progress,
+        };
+      });
+  
+      return projectsWithDetails;
+    } catch (error) {
+      console.error(error);
+      throw new HttpError(`Error finding projects by user ID`);
     }
   }
 }
