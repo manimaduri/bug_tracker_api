@@ -84,4 +84,16 @@ export class BugService {
       );
     }
   }
+
+  async findAllBugs(req: Request) {
+    try {
+      const userId = req.user!.userId;
+      return await this.bugRepository.findAllBugs(userId);
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Error finding all bugs",
+        error?.statusCode ?? 500
+      );
+    }
+  }
 }

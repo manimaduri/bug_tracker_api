@@ -3,6 +3,7 @@ import { Bug } from "../models/Bug";
 import { Project } from "../models/Project";
 import { User } from "../models/User";
 import { HttpError } from "../utils/responseHandler";
+import { UserProject } from "../models/UserProject";
 
 export class BugRepository {
   async createBug(bugData: Partial<Bug>) {
@@ -115,6 +116,47 @@ export class BugRepository {
     } catch (error) {
       console.error(error);
       throw new HttpError(`Error finding bugs by user ID`);
+    }
+  }
+
+  async findAllBugs(userId: string) {
+    try {
+      // Step 1: Find all projects the user is involved in
+      const userProjects = await UserProject.findAll({
+        where: { userId },
+        attributes: ['projectId'],
+      });
+  
+      // Step 2: Extract project IDs
+      const projectIds = userProjects.map(up => up.projectId);
+  
+      // Step 3: Find all bugs in those projects
+      const bugs = await Bug.findAll({
+        where: {
+          projectId: { [Op.in]: projectIds },
+        },
+        include: [
+          {
+            model: User,
+            as: "createdUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+          {
+            model: User,
+            as: "assignedUser",
+            attributes: { exclude: ["password", "createdAt", "updatedAt"] },
+          },
+          {
+            model : Project,
+            as : "project",
+          }
+        ],
+      });
+  
+      return bugs;
+    } catch (error) {
+      console.error(error);
+      throw new HttpError(`Error finding all bugs`);
     }
   }
 }

@@ -34,6 +34,23 @@ router.get("/getBugsByProject/:projectId",authMiddleware, async (req, res) => {
   }
 });
 
+//get bugs of all projects even that other users are assigned to and created but it should be same projects the user is in use UserProject model to find projects and get all bugs in the project
+router.get("/allBugs",authMiddleware, async (req, res) => {
+  try {
+    const bugs = await bugService.findAllBugs(req);
+    successResponse(res, bugs);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to find bugs",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
+
+
 router.get("/:bugId",authMiddleware, async (req, res) => {
   try {
     const bug = await bugService.findBugById(req.params.bugId);
