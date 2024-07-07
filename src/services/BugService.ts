@@ -5,14 +5,17 @@ import { plainToClass } from "class-transformer";
 import { BugDTO } from "../models/dto/BugDTO";
 import { validateDTO } from "../utils/validateDTO";
 import { ProjectRepository } from "../repositories/ProjectRepository";
+import { UserProjectRepository } from "../repositories/UserProjectRepository";
 
 export class BugService {
   private bugRepository: BugRepository;
   private projectRepository: ProjectRepository;
+  private userProjectRepository: UserProjectRepository;
 
   constructor() {
     this.bugRepository = new BugRepository();
     this.projectRepository = new ProjectRepository();
+    this.userProjectRepository = new UserProjectRepository();
   }
 
   async createBug(req: Request) {
@@ -24,6 +27,8 @@ export class BugService {
       await this.projectRepository.findProjectById(
         projectId
       );
+
+      await this.userProjectRepository.isUserAssignedToProject(userId, projectId)
       
       const bugDTO = plainToClass(BugDTO, bugData);
       await validateDTO(bugDTO);
@@ -36,8 +41,9 @@ export class BugService {
     }
   }
 
-  async findBugsByProjectId(projectId: string) {
+  async findBugsByProjectId(req : Request) {
     try {
+      const projectId = req.params.projectId;
       await this.projectRepository.findProjectById(projectId);
       return await this.bugRepository.findBugsByProjectId(projectId);
     } catch (error: any) {
@@ -48,9 +54,11 @@ export class BugService {
     }
   }
 
-  async findBugById(bugId: string) {
+  async findBugById(req: Request) {
     try {
-      const bug = await this.bugRepository.findBugById(bugId);
+      const bugId = req.params.bugId;
+      const userId = req.user!.userId;
+      const bug = await this.bugRepository.findBugById(bugId,userId);
       if(!bug){
         throw new HttpError("Bug not found", 404);
       }

@@ -4,8 +4,13 @@ import { Project } from "../models/Project";
 import { User } from "../models/User";
 import { HttpError } from "../utils/responseHandler";
 import { UserProject } from "../models/UserProject";
+import { UserProjectRepository } from "./UserProjectRepository";
 
 export class BugRepository {
+  private userProjectRepository: UserProjectRepository;
+  constructor() {
+    this.userProjectRepository = new UserProjectRepository();
+  }
   async createBug(bugData: Partial<Bug>) {
     try {
       const result = await Bug.create(bugData);
@@ -41,7 +46,7 @@ export class BugRepository {
     }
   }
 
-  async findBugById(bugId: string) {
+  async findBugById(bugId: string, userId: string) {
     try {
       const bug = await Bug.findByPk(bugId, {
         include: [
@@ -62,6 +67,10 @@ export class BugRepository {
           },
         ],
       });
+      if(bug){
+        const projectId = bug.projectId;
+        await this.userProjectRepository.isUserAssignedToProject(userId, projectId);
+      }
       return bug;
     } catch (error) {
       console.error(error);

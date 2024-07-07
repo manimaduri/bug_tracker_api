@@ -22,7 +22,7 @@ router.post("/",authMiddleware, async (req, res) => {
 
 router.get("/getBugsByProject/:projectId",authMiddleware, async (req, res) => {
   try {
-    const bugs = await bugService.findBugsByProjectId(req.params.projectId);
+    const bugs = await bugService.findBugsByProjectId(req);
     successResponse(res, bugs);
   } catch (error: any) {
     errorResponse(
@@ -53,7 +53,7 @@ router.get("/allBugs",authMiddleware, async (req, res) => {
 
 router.get("/:bugId",authMiddleware, async (req, res) => {
   try {
-    const bug = await bugService.findBugById(req.params.bugId);
+    const bug = await bugService.findBugById(req);
     successResponse(res, bug);
   } catch (error: any) {
     errorResponse(
