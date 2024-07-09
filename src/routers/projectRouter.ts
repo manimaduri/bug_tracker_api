@@ -20,6 +20,21 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+//by id
+router.get("/:projectId", authMiddleware, async (req, res) => {
+  try {
+    const project = await projectService.getProjectById(req);
+    successResponse(res, project, 200);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to get project",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
 //get projects of an organization
 router.get("/allProjects/:organizationId", authMiddleware, async (req, res) => {
   try {

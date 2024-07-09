@@ -4,6 +4,7 @@ import { HttpError } from "../utils/responseHandler";
 import { UserRepository } from "./UserRepository";
 import { Project } from "../models/Project";
 import { Bug, BugStatus } from "../models/Bug";
+import { User } from "../models/User";
 
 export class UserProjectRepository {
   private userRepository: UserRepository;
@@ -80,6 +81,19 @@ export class UserProjectRepository {
     } catch (error) {
       console.error(error);
       throw new HttpError(`Error finding projects by user ID`);
+    }
+  }
+  async findUsersByProjectId(projectId: string) {
+    try {
+      return await UserProject.findAll({
+        where: { projectId },
+        include: {
+          model: User,
+        },
+      });
+    } catch (error) {
+      // Assuming HttpError is a class that takes a message and a status code
+      throw new HttpError("Failed to find users by project ID", 500);
     }
   }
 }

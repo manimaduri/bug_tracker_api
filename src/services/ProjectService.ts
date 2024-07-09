@@ -65,6 +65,18 @@ export class ProjectService {
     }
   }
 
+  async getProjectById(req: Request) {
+    try {
+      const projectId = req.params.projectId;
+      return await this.projectRepository.findProjectById(projectId);
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Failed to fetch project.",
+        error?.statusCode || 500
+      );
+    }
+  }
+
   async getAllProjectsByOrganization(organizationId: string) {
     try {
       const organization =
