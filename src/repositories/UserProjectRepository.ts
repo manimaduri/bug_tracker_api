@@ -96,4 +96,17 @@ export class UserProjectRepository {
       throw new HttpError("Failed to find users by project ID", 500);
     }
   }
+
+  //remove user from project
+  async removeUserFromProject(userId: string, projectId: string, transaction?: Transaction) {
+    try {
+      const userProject = await UserProject.findOne({ where: { userId, projectId } });
+      if (!userProject) {
+        throw new HttpError(`User not assigned to project`, 404);
+      }
+      await userProject.destroy({ transaction });
+    } catch (error : any) {
+      throw new HttpError(error?.message ?? `Error removing user from project`, error?.statusCode ?? 500);
+    }
+  }
 }

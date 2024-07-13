@@ -20,11 +20,17 @@ export class UserProject extends Model {
   id!: string;
 
   @ForeignKey(() => User)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    onDelete: "CASCADE", // Add cascade delete for User
+  })
   userId!: string;
 
   @ForeignKey(() => Project)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    onDelete: "CASCADE", // Add cascade delete for Project
+  })
   projectId!: string;
 
   @BelongsTo(() => User)

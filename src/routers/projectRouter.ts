@@ -20,6 +20,21 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+//all projects
+router.get("/allProjects", authMiddleware, async (req, res) => {
+  try {
+    const projects = await projectService.getAllProjects(req);
+    successResponse(res, projects, 200);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to get projects",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
 //by id
 router.get("/:projectId", authMiddleware, async (req, res) => {
   try {
@@ -34,6 +49,9 @@ router.get("/:projectId", authMiddleware, async (req, res) => {
     );
   }
 });
+
+
+
 
 //get projects of an organization
 router.get("/allProjects/:organizationId", authMiddleware, async (req, res) => {
@@ -51,18 +69,5 @@ router.get("/allProjects/:organizationId", authMiddleware, async (req, res) => {
     );
   }
 });
-//all projects
-router.get("/allProjects", authMiddleware, async (req, res) => {
-  try {
-    const projects = await projectService.getAllProjects(req);
-    successResponse(res, projects, 200);
-  } catch (error: any) {
-    errorResponse(
-      res,
-      error,
-      error?.message ?? "Failed to get projects",
-      error?.statusCode ?? 500
-    );
-  }
-});
+
 export default router;

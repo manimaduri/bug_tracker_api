@@ -16,4 +16,22 @@ router.get("/:projectId", authMiddleware, async (req, res) => {
   }
 });
 
+router.delete("/removeUserFromProject/:userId/:projectId", authMiddleware, async (req, res) => {
+  try {
+    await userProjectService.removeUserFromProject(req);
+    successResponse(res, "User removed from project successfully", 200);
+  } catch (error: any) {
+    errorResponse(res, error, error?.message ?? "Failed to remove user from project", error?.statusCode ?? 500);
+  }
+});
+
+router.post("/addUserToProject", authMiddleware, async (req, res) => {
+  try {
+    const result = await userProjectService.addUserToProject(req);
+    successResponse(res, result, 200);
+  } catch (error: any) {
+    errorResponse(res, error, error?.message ?? "Failed to add user to project", error?.statusCode ?? 500);
+  }
+});
+
 export default router;
