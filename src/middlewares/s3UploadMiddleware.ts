@@ -32,6 +32,17 @@ export const s3UploadMiddleware = async (
           )
         );
       }
+      // Check if any file exceeds the size limit of 2MB (2 * 1024 * 1024 bytes)
+      const oversizedFile = filesArray.find(file => file.size > 2 * 1024 * 1024);
+      if (oversizedFile) {
+        // If an oversized file is found, throw an error or pass an error to next()
+        return next(
+          new HttpError(
+            `File size limit exceeded: ${oversizedFile.originalname} is larger than 2MB.`,
+            400
+          )
+        );
+      }
       const keys = await uploadToS3(req.files as Express.Multer.File[]);
       req.body.imageKeys = keys; // Attach the URLs to the request body
     }
