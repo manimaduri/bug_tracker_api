@@ -19,6 +19,17 @@ export class UserProjectRepository {
         console.log(`User with ID ${userId} not found`);
         throw new HttpError(`Employee not found`, 404); // Use appropriate HTTP status code
       }
+      // Check if the userId and projectId combination already exists
+      const existingAssociation = await UserProject.findOne({
+        where: { userId, projectId },
+        transaction: transaction
+      });
+
+      if (existingAssociation) {
+        console.log(`Association between user ID ${userId} and project ID ${projectId} already exists`);
+        throw new HttpError(`Association already exists`, 409); // 409 Conflict
+      }
+
       const result = await UserProject.create({ userId, projectId }, {transaction});
       return result;
     } catch (error : any) {
