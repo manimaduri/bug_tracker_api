@@ -67,8 +67,8 @@ export class Bug extends Model {
   description!: string;
 
   @AllowNull(true)
-  @Column(DataType.STRING)
-  image?: string;
+  @Column(DataType.ARRAY(DataType.STRING))
+  image?: string[];
 
   @Column({type : DataType.ENUM, values: Object.values(BugClassification), defaultValue: BugClassification.Bug})
   classification!: BugClassification;
