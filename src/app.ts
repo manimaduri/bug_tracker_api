@@ -16,10 +16,22 @@ app.use(bodyParser.json());
 app.use("/", router);
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
- errorResponse(res, err, err.message ?? 'Something broke!', 500);
-});
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err.stack);
+    errorResponse(
+      res,
+      err,
+      err.message ?? "Something broke!",
+      err?.statusCode ?? 500
+    );
+  }
+);
 
 async function startApp() {
   try {
