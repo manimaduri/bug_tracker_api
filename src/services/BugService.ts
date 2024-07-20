@@ -6,6 +6,7 @@ import { BugDTO } from "../models/dto/BugDTO";
 import { validateDTO } from "../utils/validateDTO";
 import { ProjectRepository } from "../repositories/ProjectRepository";
 import { UserProjectRepository } from "../repositories/UserProjectRepository";
+import { generatePresignedUrl } from "../utils/uploadFiles";
 
 export class BugService {
   private bugRepository: BugRepository;
@@ -22,17 +23,30 @@ export class BugService {
     try {
       const userId = req.user!.userId;
       const bugData = req.body;
+      const imageKeys = req.body.imageKeys;
       bugData.createdBy = userId;
+      bugData.image = imageKeys;
       const projectId = bugData.projectId;
-      await this.projectRepository.findProjectById(
+      await this.projectRepository.findProjectById(projectId);
+
+      await this.userProjectRepository.isUserAssignedToProject(
+        userId,
         projectId
       );
 
-      await this.userProjectRepository.isUserAssignedToProject(userId, projectId)
-      
       const bugDTO = plainToClass(BugDTO, bugData);
       await validateDTO(bugDTO);
-      return await this.bugRepository.createBug(bugDTO);
+      const createdBug = await this.bugRepository.createBug(bugDTO);
+
+      // Generate pre-signed URLs for each image
+      const imageUrls = await Promise.all(
+        imageKeys.map((key: string) => generatePresignedUrl(key))
+      );
+
+      createdBug.image = imageUrls;
+
+      // Include the pre-signed URLs in the response
+      return createdBug;
     } catch (error: any) {
       throw new HttpError(
         error?.message ?? "Error creating bug",
@@ -41,7 +55,7 @@ export class BugService {
     }
   }
 
-  async findBugsByProjectId(req : Request) {
+  async findBugsByProjectId(req: Request) {
     try {
       const projectId = req.params.projectId;
       await this.projectRepository.findProjectById(projectId);
@@ -58,8 +72,8 @@ export class BugService {
     try {
       const bugId = req.params.bugId;
       const userId = req.user!.userId;
-      const bug = await this.bugRepository.findBugById(bugId,userId);
-      if(!bug){
+      const bug = await this.bugRepository.findBugById(bugId, userId);
+      if (!bug) {
         throw new HttpError("Bug not found", 404);
       }
       return bug;

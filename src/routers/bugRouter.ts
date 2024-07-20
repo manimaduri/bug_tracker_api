@@ -2,11 +2,12 @@ import { Router } from "express";
 import { BugService } from "../services/BugService";
 import { errorResponse, successResponse } from "../utils/responseHandler";
 import authMiddleware from "../middlewares/authMiddleware";
+import { s3UploadMiddleware, uploadMiddleware } from "../middlewares/s3UploadMiddleware";
 
 const router = Router();
 const bugService = new BugService();
 
-router.post("/",authMiddleware, async (req, res) => {
+router.post("/",authMiddleware, uploadMiddleware, s3UploadMiddleware, async (req, res) => {
   try {
     const bug = await bugService.createBug(req);
     successResponse(res, bug, 201);

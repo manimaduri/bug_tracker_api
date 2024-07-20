@@ -6,10 +6,9 @@ import {
   IsEnum,
   Length,
   MaxLength,
+  IsArray,
 } from "class-validator";
 import { BugClassification, BugPriority, BugStatus } from "../Bug";
-
-
 
 export class BugDTO {
   @IsUUID()
@@ -34,9 +33,10 @@ export class BugDTO {
   @MaxLength(10000)
   description!: string;
 
-  @IsString()
   @IsOptional()
-  image?: string;
+  @IsArray()
+  @IsString({ each: true })
+  image?: string[];
 
   @IsEnum(BugClassification, { message: "Invalid classification" })
   @IsOptional()
