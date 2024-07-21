@@ -68,6 +68,11 @@ export class ProjectService {
   async getProjectById(req: Request) {
     try {
       const projectId = req.params.projectId;
+      const userId = req.user!.userId;
+      await this.userProjectRepository.isUserAssignedToProject(
+        userId,
+        projectId
+      );
       return await this.projectRepository.findProjectById(projectId);
     } catch (error: any) {
       throw new HttpError(

@@ -59,6 +59,10 @@ export class BugService {
     try {
       const projectId = req.params.projectId;
       await this.projectRepository.findProjectById(projectId);
+      await this.userProjectRepository.isUserAssignedToProject(
+        req.user!.userId,
+        projectId
+      );
       return await this.bugRepository.findBugsByProjectId(projectId);
     } catch (error: any) {
       throw new HttpError(
@@ -96,8 +100,9 @@ export class BugService {
     }
   }
 
-  async findBugsCreatedByUsers(userIds: string[]) {
+  async findBugsCreatedByUsers(req: Request) {
     try {
+      const userIds = req.body.userIds;
       return await this.bugRepository.findBugsCreatedByUsers(userIds);
     } catch (error: any) {
       throw new HttpError(

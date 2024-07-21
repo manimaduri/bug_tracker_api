@@ -83,8 +83,8 @@ router.post("/findBugsAssignedToUsers",authMiddleware, async (req, res) => {
 
 router.post("/findBugsCreatedByUsers",authMiddleware, async (req, res) => {
   try {
-    const userIds = req.body.userIds;
-    const bugs = await bugService.findBugsCreatedByUsers(userIds);
+    
+    const bugs = await bugService.findBugsCreatedByUsers(req);
     successResponse(res, bugs);
   } catch (error: any) {
     errorResponse(
