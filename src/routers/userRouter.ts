@@ -113,4 +113,32 @@ router.delete("/deleteProfilePicture", authMiddleware, async (req, res) => {
   }
 });
 
+router.patch("/toggleUserRole/:userId", authMiddleware, async (req, res) => {
+  try {
+    const result = await userService.toggleUserRole(req);
+    successResponse(res, result, 200);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to toggle user role",
+      error?.statusCode || 500
+    );
+  }
+});
+
+router.patch("/changePassword", authMiddleware, async (req, res) => {
+  try {
+    const result = await userService.changePassword(req);
+    successResponse(res, result, 200);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to change password",
+      error?.statusCode || 500
+    );
+  }
+});
+
 export default router;

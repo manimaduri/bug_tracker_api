@@ -7,6 +7,7 @@ import { plainToClass } from "class-transformer";
 import { UpdateUserDTO } from "../models/dto/UpdateUserDTO";
 import { validateDTO } from "../utils/validateDTO";
 import { deleteObjectFromS3, generatePresignedUrl } from "../utils/uploadFiles";
+import { UserRole } from "../models/dto/UserDTO";
 
 export class UserService {
   private userRepository: UserRepository;
@@ -26,7 +27,15 @@ export class UserService {
       if (!currentUserDetails) {
         throw new HttpError("User not found", 404);
       }
-      const { role, password, profilePicture,id,createdAt,updatedAt, ...userData } = req.body;
+      const {
+        role,
+        password,
+        profilePicture,
+        id,
+        createdAt,
+        updatedAt,
+        ...userData
+      } = req.body;
       if (userData?.email?.includes("@")) {
         const domain = userData.email.split("@")[1];
         const currentdomain = currentUserDetails.email.split("@")[1];
@@ -113,7 +122,7 @@ export class UserService {
         profilePicture: "",
       });
 
-      return  "Profile picture deleted successfully";
+      return "Profile picture deleted successfully";
     } catch (error: any) {
       throw new HttpError(
         error?.message ?? "Failed to delete profile picture",
@@ -136,6 +145,66 @@ export class UserService {
       console.error("Error fetching employees........:", error?.stack);
       throw new HttpError(
         error?.message ?? "Failed to fetch employees.",
+        error?.statusCode || 500
+      );
+    }
+  }
+
+  async toggleUserRole(req: Request) {
+    try {
+      const userId = req.params.userId;
+      const role = req.user!.role;
+      if (role !== UserRole.ORGANIZATION) {
+        throw new HttpError("You are not authorized", 403);
+      }
+      const user = await this.userRepository.findUserById(userId);
+      if (!user) {
+        throw new HttpError("User not found", 404);
+      }
+
+      let newRole;
+      if (user.role === UserRole.MANAGER) {
+        newRole = UserRole.EMPLOYEE;
+      } else if (user.role === UserRole.EMPLOYEE) {
+        newRole = UserRole.MANAGER;
+      } else {
+        throw new HttpError("Invalid user role", 400);
+      }
+
+      await this.userRepository.updateUser(userId, { role: newRole });
+      return "User role updated successfully";
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Failed to update user role",
+        error?.statusCode || 500
+      );
+    }
+  }
+
+  async changePassword(req: Request) {
+    try {
+      const userId = req.user!.userId;
+      const { password } = req.body;
+
+      // Password strength validation
+      const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};':"\\|,.<>\/?~-])[A-Za-z\d!@#$%^&*()_+\[\]{};':"\\|,.<>\/?~-]{8,}$/;
+      
+        if (!passwordRegex.test(password)) {
+        throw new HttpError(
+          "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character",
+          400
+        );
+      }
+
+      const user = await this.userRepository.findUserById(userId);
+      if (!user) {
+        throw new HttpError("User not found", 404);
+      }
+      await this.userRepository.updateUser(userId, { password });
+      return "Password updated successfully";
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Failed to update password",
         error?.statusCode || 500
       );
     }
