@@ -94,6 +94,34 @@ export class UserService {
     }
   }
 
+  async deleteProfilePicture(req: Request) {
+    try {
+      const userId = req.user!.userId;
+      const currentUserDetails = await this.userRepository.findUserById(userId);
+
+      if (!currentUserDetails) {
+        throw new HttpError("User not found", 404);
+      }
+
+      if (!currentUserDetails.profilePicture) {
+        throw new HttpError("Profile picture not found", 404);
+      }
+
+      await deleteObjectFromS3(currentUserDetails.profilePicture);
+
+      await this.userRepository.updateUser(userId, {
+        profilePicture: "",
+      });
+
+      return  "Profile picture deleted successfully";
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Failed to delete profile picture",
+        error?.statusCode || 500
+      );
+    }
+  }
+
   async getAllEmployeesByOrganization(organizationId: string) {
     try {
       const organization =

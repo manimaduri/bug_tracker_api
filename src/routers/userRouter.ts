@@ -99,4 +99,18 @@ router.patch(
   }
 );
 
+router.delete("/deleteProfilePicture", authMiddleware, async (req, res) => {
+  try {
+    const result = await userService.deleteProfilePicture(req);
+    successResponse(res, result, 200);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to delete profile picture",
+      error?.statusCode || 500
+    );
+  }
+});
+
 export default router;
