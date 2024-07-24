@@ -21,6 +21,19 @@ export class BugRepository {
     }
   }
 
+  async updateBug(bugId: string, bugData: Partial<Bug>) {
+    try {
+      const result = await Bug.update(bugData, {
+        where: { id: bugId },
+        returning: true,
+      });
+      return result[1][0];
+    } catch (error) {
+      console.error(error);
+      throw new HttpError(`Error updating bug`);
+    }
+  }
+
   async findBugsByProjectId(projectId: string) {
     try {
       const bugs = await Bug.findAll({

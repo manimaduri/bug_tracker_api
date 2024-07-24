@@ -2,6 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomBytes } from "crypto";
@@ -76,4 +77,22 @@ export async function generatePresignedUrl(
 
   // Pass the S3Client instance directly to getSignedUrl
   return getSignedUrl(s3Client, command, { expiresIn: expires });
+}
+
+/**
+ * Deletes an object from S3.
+ * @param fileKey The key of the file in the S3 bucket.
+ */
+export async function deleteObjectFromS3(fileKey: string) {
+  const command = new DeleteObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: fileKey,
+  });
+
+  try {
+    await s3Client.send(command);
+  } catch (error) {
+    console.error(`Error deleting ${fileKey} from S3:`, error);
+    throw error;
+  }
 }

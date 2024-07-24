@@ -96,4 +96,33 @@ router.post("/findBugsCreatedByUsers",authMiddleware, async (req, res) => {
   }
 });
 
+router.patch("/updateBug/:bugId", authMiddleware, uploadMiddleware, s3UploadMiddleware, async (req, res) => {
+  try {
+    const updatedBug = await bugService.updateBug(req);
+    successResponse(res, updatedBug);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to update bug",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
+//delete images from a bug
+
+router.delete("/deleteImage/:bugId", authMiddleware, async (req, res) => {
+  try {
+    const updatedBug = await bugService.deleteImage(req);
+    successResponse(res, updatedBug);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to delete image",
+      error?.statusCode ?? 500
+    );
+  }
+});
 export default router;
