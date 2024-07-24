@@ -23,11 +23,11 @@ export class ProjectRepository {
     }
   }
 
-  async findProjectsByOrganizationId(createdBy: string) {
+  async findProjectsByOrganizationId(organizationId: string) {
     try {
       // Fetch projects and include associated bugs
       const projects = await Project.findAll({
-        where: { createdBy },
+        where: { organizationId },
         include: [
           {
             model: Bug,

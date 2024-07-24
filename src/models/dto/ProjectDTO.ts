@@ -73,4 +73,6 @@ export class ProjectDTO {
 
   createdBy?: string;
 
+  organizationId?:string;
+
 }

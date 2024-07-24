@@ -37,9 +37,13 @@ export class Project extends Model {
   @Column(DataType.UUID)
   id!: string;
 
-  @ForeignKey(() => Organization)
+  @ForeignKey(() => User)
   @Column(DataType.UUID)
   createdBy!: string;
+
+  @ForeignKey(()=>Organization)
+  @Column(DataType.UUID)
+  organizationId! :string;
 
   @Unique
   @AllowNull(false)
@@ -62,6 +66,9 @@ export class Project extends Model {
 
   @BelongsTo(() => Organization, { onDelete: "CASCADE" })
   organization!: Organization;
+
+  @BelongsTo(() => User, { foreignKey: 'createdBy', onDelete: "CASCADE" })
+  creator!: User;
 
   @BelongsToMany(() => User, {
     through: () => UserProject,

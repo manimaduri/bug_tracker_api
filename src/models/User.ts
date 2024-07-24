@@ -72,4 +72,10 @@ export class User extends Model {
     as: 'createdBugs', 
   })
   createdBugs!: Bug[];
+
+  @HasMany(() => Project, { 
+    foreignKey: 'createdBy', 
+    as: 'createdProjects', 
+  })
+  createdProjects!: Project[];
 }

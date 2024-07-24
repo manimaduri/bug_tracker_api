@@ -8,6 +8,7 @@ import { Request } from "express";
 import { validateDTO } from "../utils/validateDTO";
 import { UserProjectRepository } from "../repositories/UserProjectRepository";
 import { getSequelizeInstance } from "../models";
+import { UserRole } from "../models/dto/UserDTO";
 
 export class ProjectService {
   private projectRepository: ProjectRepository;
@@ -27,6 +28,11 @@ export class ProjectService {
     const transaction = await sequelize.transaction(); // Start a transaction
     try {
       const userId = req.user!.userId;
+      const role = req.user!.role;
+
+      if(!(role === UserRole.EMPLOYEE || role === UserRole.ORGANIZATION)){
+        throw new HttpError("Unauthorized access", 403);
+      }
 
       const organization =
         await this.organizationRepository.findOrganizationByUserId(userId); // Assuming the User model has a relation to Organization
@@ -37,7 +43,8 @@ export class ProjectService {
       const projectDTO = plainToClass(ProjectDTO, req.body);
       await validateDTO(projectDTO);
 
-      projectDTO.createdBy = organization.id;
+      projectDTO.organizationId = organization.id;
+      projectDTO.createdBy=userId;
       const createdProject = await this.projectRepository.createProject(
         projectDTO,
         transaction

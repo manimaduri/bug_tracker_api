@@ -1,6 +1,8 @@
 import { Organization } from "../models/Organization";
 import { Transaction, UniqueConstraintError } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
+import { User } from "../models/User";
+import { Employee } from "../models/Employee";
 
 export class OrganizationRepository {
   async createOrganization(
@@ -23,23 +25,34 @@ export class OrganizationRepository {
     }
   }
 
-  async findOrganizationByUserId(userId: string) {
+  async findOrganizationByUserId(userId: string): Promise<Organization | null> {
     try {
-      const organization = await Organization.findOne({
-        where: {
-          userId: userId,
-        },
+      // Find the user by userId
+      const user = await User.findByPk(userId, {
+        include: [
+          { model: Organization, as: 'organization' },
+          { model: Employee, as: 'employee', include: [{ model: Organization }] }
+        ]
       });
-
-      if (!organization) {
-        console.log("No organization found with the given user ID");
-        throw new HttpError(
-          "No organization found with the given user ID",
-          404
-        );
+  
+      if (!user) {
+        console.log("User not found");
+        throw new HttpError("User not found", 404);
       }
-
-      return organization;
+  
+      // Check if the user has an associated organization
+      if (user.organization) {
+        return user.organization;
+      }
+  
+      // Check if the user is an employee and find the associated organization
+      if (user?.employee?.organization) {
+        return user.employee.organization;
+      }
+  
+      // If no organization is found
+      console.log("No organization found with the given user ID");
+      throw new HttpError("No organization found with the given user ID", 404);
     } catch (error) {
       console.log("Error finding organization by user ID:", error);
       throw new HttpError(`Error finding organization by user ID: ${error}`);
