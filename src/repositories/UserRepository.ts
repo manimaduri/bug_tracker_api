@@ -21,6 +21,22 @@ export class UserRepository {
     }
   }
 
+  async updateUser(userId: string, userData: Partial<User>) {
+    try {
+      const user = await User.update(userData, {
+        where: { id: userId },
+        returning: true,
+      });
+      return user[1][0];
+    } catch (error) {
+      if(error instanceof UniqueConstraintError){
+        throw new HttpError("Email already exists!",409);
+      }
+      console.error("Error updating user:", error);
+      throw new HttpError(`Error updating user`);
+    }
+  }
+
   async findOrganizationUserByEmailDomain(domain: string) {
     try {
       const organizationUser = await User.findOne({
@@ -64,4 +80,18 @@ export class UserRepository {
       throw new HttpError(`Error finding user`);
     }
   }
+
+  async findOrganizationAndUserById(userId: string) {
+    try {
+      const user = await User.findOne({
+        where: { id: userId },
+        include: [{ model: Organization }],
+      });
+      return user;
+    } catch (error) {
+      console.error("Error finding organization and user by ID:", error);
+      throw new HttpError(`Error finding organization and user`);
+    }
+  }
+
 }

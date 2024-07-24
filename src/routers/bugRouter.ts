@@ -2,12 +2,12 @@ import { Router } from "express";
 import { BugService } from "../services/BugService";
 import { errorResponse, successResponse } from "../utils/responseHandler";
 import authMiddleware from "../middlewares/authMiddleware";
-import { s3UploadMiddleware, uploadMiddleware } from "../middlewares/s3UploadMiddleware";
+import { s3UploadMultiMiddleware, uploadMultiMiddleware } from "../middlewares/s3UploadMultiMiddleware";
 
 const router = Router();
 const bugService = new BugService();
 
-router.post("/",authMiddleware, uploadMiddleware, s3UploadMiddleware, async (req, res) => {
+router.post("/",authMiddleware, uploadMultiMiddleware, s3UploadMultiMiddleware, async (req, res) => {
   try {
     const bug = await bugService.createBug(req);
     successResponse(res, bug, 201);
@@ -96,7 +96,7 @@ router.post("/findBugsCreatedByUsers",authMiddleware, async (req, res) => {
   }
 });
 
-router.patch("/updateBug/:bugId", authMiddleware, uploadMiddleware, s3UploadMiddleware, async (req, res) => {
+router.patch("/updateBug/:bugId", authMiddleware, uploadMultiMiddleware, s3UploadMultiMiddleware, async (req, res) => {
   try {
     const updatedBug = await bugService.updateBug(req);
     successResponse(res, updatedBug);

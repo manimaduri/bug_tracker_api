@@ -168,7 +168,7 @@ export class AuthService {
     }
     const employeeDTO = plainToClass(EmployeeDTO, {
       userId: createdUser.id,
-      organizationId: organizationUser?.organization.id,
+      organizationId: organizationUser.organization.id,
       ...user,
     });
     await validateDTO(employeeDTO);

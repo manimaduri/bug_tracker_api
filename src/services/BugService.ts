@@ -23,7 +23,7 @@ export class BugService {
     try {
       const userId = req.user!.userId;
       const bugData = req.body;
-      const imageKeys = req.body?.imageKeys;
+      const imageKeys = req.body?.imageKeys || [];
       bugData.createdBy = userId;
       bugData.image = imageKeys;
       const projectId = bugData.projectId;
@@ -59,7 +59,7 @@ export class BugService {
     try {
       const userId = req.user!.userId;
       const bugData = req.body;
-      const newImageKeys = req.body?.imageKeys;
+      const newImageKeys = req.body?.imageKeys || [];
       const bugId = req.params.bugId;
 
       // Ensure the user is assigned to the project

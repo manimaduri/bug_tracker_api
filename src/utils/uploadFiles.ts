@@ -41,7 +41,7 @@ export async function uploadToS3(
  * Uploads a single file to S3.
  * @param file The file to upload.
  */
-async function uploadSingleFile(file: Express.Multer.File) {
+export async function uploadSingleFile(file: Express.Multer.File) {
   // Ensure the bucket name is defined
   const bucketName = process.env.AWS_S3_BUCKET_NAME;
   if (!bucketName) {
@@ -69,14 +69,19 @@ export async function generatePresignedUrl(
   fileKey: string,
   expires: number = 300
 ) {
-  // Use the S3Client instance directly instead of S3RequestPresigner
-  const command = new GetObjectCommand({
-    Bucket: process.env.AWS_S3_BUCKET_NAME,
-    Key: fileKey,
-  });
+  try {
+    // Use the S3Client instance directly instead of S3RequestPresigner
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: fileKey,
+    });
 
-  // Pass the S3Client instance directly to getSignedUrl
-  return getSignedUrl(s3Client, command, { expiresIn: expires });
+    // Pass the S3Client instance directly to getSignedUrl
+    return await getSignedUrl(s3Client, command, { expiresIn: expires });
+  } catch (error) {
+    console.error("Error generating pre-signed URL:", error);
+    throw new Error("Could not generate pre-signed URL");
+  }
 }
 
 /**

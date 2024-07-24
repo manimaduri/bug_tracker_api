@@ -2,6 +2,7 @@ import { Employee } from "../models/Employee";
 import { Transaction } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
 import { User } from "../models/User";
+import { Organization } from "../models/Organization";
 
 export class EmployeeRepository {
   async createEmployee(
@@ -40,6 +41,18 @@ export class EmployeeRepository {
     } catch (err) {
       console.log("Error finding employee", err);
       throw new HttpError("Unable to find Employee");
+    }
+  }
+
+  async findEmployeeAndOrganizationByUserId(userId: string) {
+    try {
+      return await Employee.findOne({
+        where: { userId },
+        include: [{ model: User, as: 'user' }, {model: Organization, as: 'organization'}]
+      });
+    } catch (err) {
+      console.log("Error finding employee and organization", err);
+      throw new HttpError("Unable to find Employee and Organization");
     }
   }
 }

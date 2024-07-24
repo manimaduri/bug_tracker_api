@@ -8,9 +8,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 /**
  * Middleware to handle file uploads to S3.
  */
-export const uploadMiddleware = upload.any();
+export const uploadMultiMiddleware = upload.any();
 
-export const s3UploadMiddleware = async (
+export const s3UploadMultiMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction

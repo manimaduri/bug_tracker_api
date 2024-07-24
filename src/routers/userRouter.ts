@@ -3,6 +3,10 @@ import { AuthService } from "../services/AuthService";
 import { errorResponse, successResponse } from "../utils/responseHandler";
 import { UserService } from "../services/UserService";
 import authMiddleware from "../middlewares/authMiddleware";
+import {
+  s3UploadSingleMiddleware,
+  uploadSingleMiddleware,
+} from "../middlewares/s3UploadSingleMiddleware";
 
 const router = express.Router();
 const authService = new AuthService();
@@ -40,21 +44,59 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/employeesByOrganization/:organizationId",authMiddleware, async (req, res) => {
+router.get(
+  "/employeesByOrganization/:organizationId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const result = await userService.getAllEmployeesByOrganization(
+        req.params.organizationId
+      );
+      successResponse(res, result, 200);
+    } catch (error: any) {
+      console.error("Error fetching employees........:", error.stack);
+      errorResponse(
+        res,
+        error,
+        error?.message ?? "Failed to fetch employees.",
+        error?.statusCode || 500
+      );
+    }
+  }
+);
+
+router.patch("/updateUser", authMiddleware, async (req, res) => {
   try {
-    const result = await userService.getAllEmployeesByOrganization(
-      req.params.organizationId
-    );
+    const result = await userService.updateUser(req);
     successResponse(res, result, 200);
   } catch (error: any) {
-    console.error("Error fetching employees........:", error.stack);
     errorResponse(
       res,
       error,
-      error?.message ?? "Failed to fetch employees.",
+      error?.message ?? "Failed to update user.",
       error?.statusCode || 500
     );
   }
 });
+
+router.patch(
+  "/updateProfilePicture",
+  authMiddleware,
+  uploadSingleMiddleware,
+  s3UploadSingleMiddleware,
+  async (req, res) => {
+    try {
+      const result = await userService.updateProfilePicture(req);
+      successResponse(res, result, 200);
+    } catch (error: any) {
+      errorResponse(
+        res,
+        error,
+        error?.message ?? "Failed to update profile picture",
+        error?.statusCode || 500
+      );
+    }
+  }
+);
 
 export default router;
