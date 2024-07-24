@@ -206,6 +206,10 @@ export class BugService {
       if (!bug) {
         throw new HttpError("Bug not found", 404);
       }
+      const image = await Promise.all(
+        (bug.image ?? []).map((key: string) => generatePresignedUrl(key))
+      );
+      bug.image = image;
       return bug;
     } catch (error: any) {
       throw new HttpError(
