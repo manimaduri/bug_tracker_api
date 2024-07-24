@@ -187,7 +187,7 @@ export class UserService {
       const { password } = req.body;
 
       // Password strength validation
-      const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};':"\\|,.<>\/?~-])[A-Za-z\d!@#$%^&*()_+\[\]{};':"\\|,.<>\/?~-]{8,}$/;
+      const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{};:'"\\|,.<>/?~-])[A-Za-z\d!@#$%^&*()_+[\]{};:'"\\|,.<>/?~-]{8,}$/;
       
         if (!passwordRegex.test(password)) {
         throw new HttpError(
