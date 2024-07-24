@@ -26,7 +26,7 @@ export class UserService {
       if (!currentUserDetails) {
         throw new HttpError("User not found", 404);
       }
-      const { role, password, profilePicture,...userData } = req.body;
+      const { role, password, profilePicture,id,createdAt,updatedAt, ...userData } = req.body;
       if (userData?.email?.includes("@")) {
         const domain = userData.email.split("@")[1];
         const currentdomain = currentUserDetails.email.split("@")[1];

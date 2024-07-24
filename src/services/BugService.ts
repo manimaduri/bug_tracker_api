@@ -58,7 +58,7 @@ export class BugService {
   async updateBug(req: Request) {
     try {
       const userId = req.user!.userId;
-      const bugData = req.body;
+      const {id,createdAt,updatedAt, ...bugData} = req.body;
       const newImageKeys = req.body?.imageKeys || [];
       const bugId = req.params.bugId;
 

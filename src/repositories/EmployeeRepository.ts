@@ -17,15 +17,29 @@ export class EmployeeRepository {
     }
   }
 
+  async updateEmployee(id: string, employeeData: Partial<Employee>) {
+    try {
+      const result = await Employee.update(employeeData, {
+        where: { id },
+        returning: true,
+      });
+      return result[1][0];
+    } catch (error) {
+      throw new HttpError(`Error updating employee: ${error}`);
+    }
+  }
+
   async findEmployeesByOrganizationId(organizationId: string) {
     try {
       const employees = await Employee.findAll({
         where: { organizationId },
-        include: [{
-          model: User,
-          as: 'user',
-          attributes: { exclude: ['password'] } // Exclude password from the response
-        }]
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: { exclude: ["password"] }, // Exclude password from the response
+          },
+        ],
       });
 
       return employees;
@@ -48,7 +62,10 @@ export class EmployeeRepository {
     try {
       return await Employee.findOne({
         where: { userId },
-        include: [{ model: User, as: 'user' }, {model: Organization, as: 'organization'}]
+        include: [
+          { model: User, as: "user" },
+          { model: Organization, as: "organization" },
+        ],
       });
     } catch (err) {
       console.log("Error finding employee and organization", err);
