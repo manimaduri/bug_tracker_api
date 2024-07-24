@@ -64,6 +64,10 @@ export class Project extends Model {
   @Column(DataType.DATE)
   deadline?: Date;
 
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  logo?: string;
+
   @BelongsTo(() => Organization, { onDelete: "CASCADE" })
   organization!: Organization;
 
