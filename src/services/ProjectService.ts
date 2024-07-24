@@ -72,6 +72,33 @@ export class ProjectService {
     }
   }
 
+  async updateProject(req: Request) {
+    try {
+      const userId = req.user!.userId;
+      const projectId = req.params.projectId;
+      const {id,createdAt,updatedAt,logo,createdBy,organizationId, ...projectData} = req.body;
+      const currentProject = await this.projectRepository.findProjectById(projectId);
+      if (!currentProject) {
+        throw new HttpError("Project not found", 404);
+      }
+      if(currentProject.createdBy !== userId){
+        throw new HttpError("Unauthorized access", 403);
+      }
+      const projectDTO = plainToClass(ProjectDTO, projectData);
+      await validateDTO(projectDTO);
+      await this.userProjectRepository.isUserAssignedToProject(
+        userId,
+        projectId
+      );
+      return await this.projectRepository.updateProject(projectId, projectDTO);
+    } catch (error: any) {
+      throw new HttpError(
+        error?.message ?? "Failed to update project",
+        error?.statusCode || 500
+      );
+    }
+  }
+
   async getProjectById(req: Request) {
     try {
       const projectId = req.params.projectId;

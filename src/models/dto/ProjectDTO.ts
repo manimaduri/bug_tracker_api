@@ -1,5 +1,3 @@
-//ProjectDTO.ts
-
 import { Transform } from "class-transformer";
 import {
   IsDate,
@@ -10,7 +8,8 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
-  IsEnum
+  IsEnum,
+  IsOptional
 } from "class-validator";
 import { ProjectStatus } from "../Project";
 
@@ -54,7 +53,7 @@ export class ProjectDTO {
   description!: string;
 
   //deadline is optional date
-
+  @IsOptional()
   @Transform(({ value }) => {
     // Attempt to convert string to Date if it matches the expected format
     const datePattern = /^\d{2}-\d{2}-\d{4}$/;

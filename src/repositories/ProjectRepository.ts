@@ -23,6 +23,19 @@ export class ProjectRepository {
     }
   }
 
+  async updateProject(projectId: string, projectData: Partial<Project>) {
+    try {
+      const result = await Project.update(projectData, {
+        where: { id: projectId },
+        returning: true,
+      });
+      return result[1][0];
+    } catch (error) {
+      console.error("Error updating project:", error);
+      throw new HttpError(`Error updating project`);
+    }
+  }
+
   async findProjectsByOrganizationId(organizationId: string) {
     try {
       // Fetch projects and include associated bugs
