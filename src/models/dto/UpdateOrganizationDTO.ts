@@ -1,8 +1,6 @@
-import { IsString, IsUUID , Matches, MaxLength, MinLength} from "class-validator";
+import { IsString , Matches, MaxLength, MinLength} from "class-validator";
 
-export class CreateOrganizationDTO {
-  @IsUUID()
-  userId!: string;
+export class UpdateOrganizationDTO {
 
   @IsString()
   @MinLength(1)

@@ -25,6 +25,22 @@ export class OrganizationRepository {
     }
   }
 
+  async updateOrganization(
+    organizationId: string,
+    organizationData: Partial<Organization>
+  ) {
+    try {
+      const result = await Organization.update(organizationData, {
+        where: { id: organizationId },
+        returning: true,
+      });
+      return result[1][0];
+    } catch (error) {
+      console.log("Error updating organization:", error);
+      throw new HttpError(`Error updating organization`);
+    }
+  }
+
   async findOrganizationByUserId(userId: string): Promise<Organization | null> {
     try {
       // Find the user by userId
