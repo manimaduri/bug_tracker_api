@@ -22,4 +22,18 @@ router.patch("/updateEmployee", authMiddleware, async (req, res) => {
     }
 });
 
+router.post("/searchEmployees", authMiddleware, async (req, res) => {
+    try {
+        const employees = await employeeService.searchEmployees(req);
+        successResponse(res, employees);
+    } catch (error: any) {
+        errorResponse(
+        res,
+        error,
+        error?.message ?? "Failed to search employees",
+        error?.statusCode ?? 500
+        );
+    }
+});
+
 export default router;

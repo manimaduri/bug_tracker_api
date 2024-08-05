@@ -1,5 +1,5 @@
 import { Employee } from "../models/Employee";
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
 import { User } from "../models/User";
 import { Organization } from "../models/Organization";
@@ -70,6 +70,46 @@ export class EmployeeRepository {
     } catch (err) {
       console.log("Error finding employee and organization", err);
       throw new HttpError("Unable to find Employee and Organization");
+    }
+  }
+
+  async searchEmployees(query: string, organizationId: string) {
+    try {
+      const formattedQuery = query.replace(/ /g, " | "); // Replace spaces with regex OR for multi-word search
+      const employees = await Employee.findAll({
+        where: {
+          organizationId,
+          [Op.or]: [
+            {
+              firstName: {
+                [Op.iRegexp]: `(^| )${formattedQuery}`, // Match any word starting with the query
+              },
+            },
+            {
+              lastName: {
+                [Op.iRegexp]: `(^| )${formattedQuery}`, // Match any word starting with the query
+              },
+            },
+            {
+              designation: {
+                [Op.iRegexp]: `(^| )${formattedQuery}`, // Match any word starting with the query
+              },
+            },
+          ],
+        },
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: { exclude: ["password"] }, // Exclude password from the response
+          },
+        ],
+      });
+
+      return employees;
+    } catch (error) {
+      console.error("Error searching employees:", error);
+      throw new HttpError(`Error searching employees`);
     }
   }
 }
