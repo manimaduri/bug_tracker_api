@@ -74,4 +74,6 @@ export class ProjectDTO {
 
   organizationId?:string;
 
+  logo?:string;
+
 }

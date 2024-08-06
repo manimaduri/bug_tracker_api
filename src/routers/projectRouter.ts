@@ -2,11 +2,12 @@ import { Router } from "express";
 import authMiddleware from "../middlewares/authMiddleware";
 import { ProjectService } from "../services/ProjectService";
 import { errorResponse, successResponse } from "../utils/responseHandler";
+import { s3UploadSingleMiddleware, uploadSingleMiddleware } from "../middlewares/s3UploadSingleMiddleware";
 const router = Router();
 
 const projectService = new ProjectService();
 
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", authMiddleware,uploadSingleMiddleware,s3UploadSingleMiddleware, async (req, res) => {
   try {
     const project = await projectService.createProject(req);
     successResponse(res, project, 201);
