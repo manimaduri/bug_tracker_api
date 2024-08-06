@@ -138,6 +138,48 @@ export class ProjectService {
     }
   }
 
+  async updateProjectLogo(req: Request) {
+    try {
+      const userId = req.user!.userId;
+      const projectId = req.params.projectId;
+      const newImageKey = req.body.imageKey;
+  
+      const currentProject = await this.projectRepository.findProjectById(projectId);
+      if (!currentProject) {
+        throw new HttpError("Project not found", 404);
+      }
+      if (currentProject.createdBy !== userId) {
+        throw new HttpError("Unauthorized access", 403);
+      }
+  
+      const oldImageKey = currentProject.logo;
+  
+       // Update the project logo in the database
+    await this.projectRepository.updateProject(projectId, { logo: newImageKey || null });
+  
+      // Delete the old logo from S3 if a new logo is provided or if the logo is being removed
+      if (oldImageKey && oldImageKey !== newImageKey) {
+        try {
+          await deleteObjectFromS3(oldImageKey);
+        } catch (s3Error) {
+          console.error("Failed to delete old logo from S3:", s3Error);
+        }
+      }
+      if(newImageKey){
+        const presignedUrl = await generatePresignedUrl(newImageKey);
+        return {presignedUrl};
+      }
+  
+      return {logo: null};
+    } catch (error: any) {
+      console.error("Error updating project logo:", error);
+      throw new HttpError(
+        error?.message ?? "Failed to update project logo",
+        error?.statusCode || 500
+      );
+    }
+  }
+
   async getProjectById(req: Request) {
     try {
       const projectId = req.params.projectId;

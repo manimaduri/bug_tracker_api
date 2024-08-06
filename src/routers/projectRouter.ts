@@ -86,4 +86,19 @@ router.patch("/:projectId", authMiddleware, async (req, res) => {
   }
 });
 
+//updateProjectLogo
+router.patch("/logo/:projectId", authMiddleware,uploadSingleMiddleware,s3UploadSingleMiddleware, async (req, res) => {
+  try {
+    const project = await projectService.updateProjectLogo(req);
+    successResponse(res, project, 200);
+  } catch (error: any) {
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to update project logo",
+      error?.statusCode ?? 500
+    );
+  }
+});
+
 export default router;
