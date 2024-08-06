@@ -181,4 +181,29 @@ export class BugRepository {
       throw new HttpError(`Error finding all bugs`);
     }
   }
+
+  async findProjectByBugId(bugId: string) {
+    try {
+      const bug = await Bug.findByPk(bugId, {
+        include: [{
+          model: Project,
+          as: 'project'
+        }]
+      });
+  
+      if (!bug) {
+        throw new HttpError("Bug not found", 404);
+      }
+  
+      const project = bug.project;
+      if (!project) {
+        throw new HttpError("Project not found", 404);
+      }
+  
+      return project;
+    } catch (error) {
+      console.error(error);
+      throw new HttpError(`Error finding project by bug ID`);
+    }
+  }
 }

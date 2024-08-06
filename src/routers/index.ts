@@ -5,6 +5,7 @@ import bugRouter from "./bugRouter";
 import userProjectRouter from "./userProjectRouter";
 import employeeRouter from "./employeeRouter";
 import organizationRouter from "./organizationRouter";
+import commentsRouter from "./commentsRouter";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use("/userProject", userProjectRouter);
 router.use("/bugs", bugRouter);
 router.use("/employee", employeeRouter);
 router.use("/organization", organizationRouter);
+router.use("/comments", commentsRouter);
 
 export default router;
