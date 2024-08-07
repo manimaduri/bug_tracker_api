@@ -2,11 +2,10 @@ import { Request } from "express";
 import { CommentsRepository } from "../repositories/CommentRepository";
 import { HttpError } from "../utils/responseHandler";
 import { plainToClass } from "class-transformer";
-import { CommentDTO } from "../models/dto/CommentDTO";
+import { CommentDTO, UpdateCommentDTO } from "../models/dto/CommentDTO";
 import { validateDTO } from "../utils/validateDTO";
 import { BugRepository } from "../repositories/BugRepository";
 import { UserProjectRepository } from "../repositories/UserProjectRepository";
-import { UpdateCommentDTO } from "../models/dto/CommentDTO"; 
 export class CommentsService {
   private commentsRepository: CommentsRepository;
   private bugRepository: BugRepository;

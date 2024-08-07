@@ -5,6 +5,7 @@ import { User } from "../models/User";
 import { HttpError } from "../utils/responseHandler";
 import { UserProject } from "../models/UserProject";
 import { UserProjectRepository } from "./UserProjectRepository";
+import { Request } from "express";
 
 export class BugRepository {
   private userProjectRepository: UserProjectRepository;
@@ -80,9 +81,12 @@ export class BugRepository {
           },
         ],
       });
-      if(bug){
+      if (bug) {
         const projectId = bug.projectId;
-        await this.userProjectRepository.isUserAssignedToProject(userId, projectId);
+        await this.userProjectRepository.isUserAssignedToProject(
+          userId,
+          projectId
+        );
       }
       return bug;
     } catch (error) {
@@ -141,18 +145,27 @@ export class BugRepository {
     }
   }
 
-  async findAllBugs(userId: string) {
+  async findAllBugs(req: Request) {
     try {
+      const userId = req.user!.userId;
+      const { page = 1, pageSize = 10 } = req.query;
       // Step 1: Find all projects the user is involved in
       const userProjects = await UserProject.findAll({
         where: { userId },
-        attributes: ['projectId'],
+        attributes: ["projectId"],
       });
-  
+
       // Step 2: Extract project IDs
-      const projectIds = userProjects.map(up => up.projectId);
-  
-      // Step 3: Find all bugs in those projects
+      const projectIds = userProjects.map((up) => up.projectId);
+
+      // Step 3: Count total bugs in those projects
+      const total = await Bug.count({
+        where: {
+          projectId: { [Op.in]: projectIds },
+        },
+      });
+
+      // Step 4: Find all bugs in those projects with pagination
       const bugs = await Bug.findAll({
         where: {
           projectId: { [Op.in]: projectIds },
@@ -169,13 +182,23 @@ export class BugRepository {
             attributes: { exclude: ["password", "createdAt", "updatedAt"] },
           },
           {
-            model : Project,
-            as : "project",
-          }
+            model: Project,
+            as: "project",
+          },
         ],
+        limit: parseInt(pageSize as string, 10),
+        offset:
+          (parseInt(page as string, 10) - 1) * parseInt(pageSize as string, 10),
       });
-  
-      return bugs;
+
+      const totalPages = Math.ceil(total / parseInt(pageSize as string, 10));
+
+      return {
+        currentPage: parseInt(page as string, 10),
+        total,
+        totalPages,
+        bugs,
+      };
     } catch (error) {
       console.error(error);
       throw new HttpError(`Error finding all bugs`);
@@ -185,21 +208,23 @@ export class BugRepository {
   async findProjectByBugId(bugId: string) {
     try {
       const bug = await Bug.findByPk(bugId, {
-        include: [{
-          model: Project,
-          as: 'project'
-        }]
+        include: [
+          {
+            model: Project,
+            as: "project",
+          },
+        ],
       });
-  
+
       if (!bug) {
         throw new HttpError("Bug not found", 404);
       }
-  
+
       const project = bug.project;
       if (!project) {
         throw new HttpError("Project not found", 404);
       }
-  
+
       return project;
     } catch (error) {
       console.error(error);

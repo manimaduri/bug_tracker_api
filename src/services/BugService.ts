@@ -244,8 +244,7 @@ export class BugService {
 
   async findAllBugs(req: Request) {
     try {
-      const userId = req.user!.userId;
-      return await this.bugRepository.findAllBugs(userId);
+      return await this.bugRepository.findAllBugs(req);
     } catch (error: any) {
       throw new HttpError(
         error?.message ?? "Error finding all bugs",
