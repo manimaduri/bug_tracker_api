@@ -7,16 +7,19 @@ import { validateDTO } from "../utils/validateDTO";
 import { ProjectRepository } from "../repositories/ProjectRepository";
 import { UserProjectRepository } from "../repositories/UserProjectRepository";
 import { deleteObjectFromS3, generatePresignedUrl } from "../utils/uploadFiles";
+import { NotificationService } from "./NotificationService";
 
 export class BugService {
   private bugRepository: BugRepository;
   private projectRepository: ProjectRepository;
   private userProjectRepository: UserProjectRepository;
+  private notificationService: NotificationService;
 
   constructor() {
     this.bugRepository = new BugRepository();
     this.projectRepository = new ProjectRepository();
     this.userProjectRepository = new UserProjectRepository();
+    this.notificationService = new NotificationService();
   }
 
   async createBug(req: Request) {
@@ -44,6 +47,25 @@ export class BugService {
       );
 
       createdBug.image = imageUrls;
+
+      if (createdBug.assignedTo) {
+        try {
+          const assignedUserId = createdBug.assignedTo;
+          const type = "bug";
+          const message = `You have been assigned to bug ${createdBug.bugName}`;
+          const referenceId = createdBug.id;
+  
+          await this.notificationService.createNotification(
+            assignedUserId,
+            type,
+            message,
+            referenceId
+          );
+        } catch (notificationError) {
+          console.error('Error sending notification:', notificationError);
+          // Optionally, you can log the error or handle it in another way
+        }
+      }
 
       // Include the pre-signed URLs in the response
       return createdBug;
