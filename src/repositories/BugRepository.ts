@@ -35,8 +35,14 @@ export class BugRepository {
     }
   }
 
-  async findBugsByProjectId(projectId: string) {
+  async findBugsByProjectId(projectId: string, page: number = 1, pageSize: number = 10) {
     try {
+      // Step 1: Count total bugs for the given project ID
+      const total = await Bug.count({
+        where: { projectId },
+      });
+  
+      // Step 2: Find all bugs for the given project ID with pagination
       const bugs = await Bug.findAll({
         where: { projectId },
         include: [
@@ -51,9 +57,18 @@ export class BugRepository {
             attributes: { exclude: ["password", "createdAt", "updatedAt"] },
           },
         ],
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
       });
-
-      return bugs;
+  
+      const totalPages = Math.ceil(total / pageSize);
+  
+      return {
+        currentPage: page,
+        total,
+        totalPages,
+        bugs,
+      };
     } catch (error) {
       console.error(error);
       throw new HttpError(`Error finding bugs by project ID`);

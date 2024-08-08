@@ -184,12 +184,16 @@ export class BugService {
   async findBugsByProjectId(req: Request) {
     try {
       const projectId = req.params.projectId;
+      const { page = 1, pageSize = 10 } = req.query;
+      // Convert page and pageSize to numbers
+    const pageNumber = parseInt(page as string, 10);
+    const pageSizeNumber = parseInt(pageSize as string, 10);
       await this.projectRepository.findProjectById(projectId);
       await this.userProjectRepository.isUserAssignedToProject(
         req.user!.userId,
         projectId
       );
-      return await this.bugRepository.findBugsByProjectId(projectId);
+      return await this.bugRepository.findBugsByProjectId(projectId,pageNumber,pageSizeNumber);
     } catch (error: any) {
       throw new HttpError(
         error?.message ?? "Error finding bugs for the project",
