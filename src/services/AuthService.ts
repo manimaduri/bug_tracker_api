@@ -13,6 +13,7 @@ import { CreateUserDTO, UserRole } from "../models/dto/UserDTO";
 import { UniqueConstraintError, Transaction } from "sequelize";
 import { HttpError } from "../utils/responseHandler";
 import bcrypt from "bcrypt";
+import { Request } from "express";
 
 type ResponseType = {
   user: {
@@ -36,11 +37,12 @@ export class AuthService {
     this.employeeRepository = new EmployeeRepository();
   }
 
-  async createUser(user: Partial<User>) {
+  async createUser(req: Request) {
     const sequelize = getSequelizeInstance();
     const transaction = await sequelize.transaction();
     let additionalData = null; // Variable to hold organization or employee data
     try {
+      const user = req.body;
       const userDTO = await this.prepareUserDTO(user);
       const createdUser = await this.userRepository.createUser(userDTO, {
         transaction,
@@ -180,6 +182,78 @@ export class AuthService {
       console.log("Failed to create employee", error?.message);
       throw new HttpError(
         error?.message || "Failed to create employee ",
+        error?.statusCode || 500
+      );
+    }
+  }
+
+  async createExternalEmployeeUser(req: Request) {
+    const sequelize = getSequelizeInstance();
+    const transaction = await sequelize.transaction();
+    try {
+      const user = req.body;
+      const role = req.user?.role;
+      const organizationUserId = req.user?.userId;
+      // Organization can create users with role employee, password is randomly generated and email domain can be any domain but not already registered
+
+      if (role !== UserRole.ORGANIZATION) {
+        throw new HttpError("Unauthorized", 401);
+      }
+      user.role = UserRole.EMPLOYEE;
+
+      // Handle external domain employee creation
+      const organization =
+        await this.organizationRepository.findOrganizationByUserId(
+          organizationUserId!
+        );
+      if (!organization) {
+        throw new HttpError("Organization not found", 404);
+      }
+      const userDTO = await this.prepareUserDTO(user);
+      const createdUser = await this.userRepository.createUser(userDTO, {
+        transaction,
+      });
+      // New function for handling employee creation
+      await this.handleExternalEmployeeUser(
+        createdUser.id,
+        user,
+        organization.id,
+        transaction
+      );
+
+      // Commit the transaction if everything is successful
+      await transaction.commit();
+    } catch (error: any) {
+      // Rollback the transaction in case of an error
+      await transaction.rollback();
+      console.log("Failed to create external employee user", error?.message);
+      throw new HttpError(
+        error?.message || "Failed to create external employee user",
+        error?.statusCode || 500
+      );
+    }
+  }
+
+  async handleExternalEmployeeUser(
+    userId: string,
+    user: Partial<User>,
+    organizationId: string,
+    transaction: Transaction
+  ) {
+    const employeeDTO = plainToClass(EmployeeDTO, {
+      userId,
+      organizationId,
+      ...user,
+    });
+    await validateDTO(employeeDTO);
+    try {
+      return await this.employeeRepository.createEmployee(employeeDTO, {
+        transaction,
+      });
+    } catch (error: any) {
+      console.log("Failed to create employee", error?.message);
+      throw new HttpError(
+        error?.message || "Failed to create employee",
         error?.statusCode || 500
       );
     }

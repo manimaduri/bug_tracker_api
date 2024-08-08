@@ -14,8 +14,7 @@ const userService = new UserService();
 
 router.post("/register", async (req, res) => {
   try {
-    const user = req.body;
-    const result = await authService.createUser(user);
+    const result = await authService.createUser(req);
     successResponse(res, result, 201);
   } catch (error: any) {
     console.error("Error creating user........:", error.stack);
@@ -39,6 +38,21 @@ router.post("/login", async (req, res) => {
       res,
       error,
       error?.message ?? "Login Failed! Please try again.",
+      error?.statusCode || 500
+    );
+  }
+});
+
+router.post("/externalEmployee", authMiddleware, async (req, res) => {
+  try {
+    await authService.createExternalEmployeeUser(req);
+    successResponse(res, "Employee created!", 201);
+  } catch (error: any) {
+    console.error("Error creating external employee user........:", error.stack);
+    errorResponse(
+      res,
+      error,
+      error?.message ?? "Failed to create external employee user",
       error?.statusCode || 500
     );
   }
