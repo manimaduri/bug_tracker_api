@@ -17,7 +17,7 @@ export class NotificationService {
     referenceId: string
   ) {
     try {
-      const notificationData = { assignedUserId, type, message, referenceId };
+      const notificationData = { userId: assignedUserId, type, message, referenceId };
       const notificationDTO = plainToClass(NotificationDTO, notificationData);
       await validateDTO(notificationDTO);
       return this.notificationRepository.createNotification(
@@ -27,7 +27,6 @@ export class NotificationService {
         referenceId
       );
     } catch (error: any) {
-      console.log("Error creating uuuu:",assignedUserId,"=======", error);
       throw new HttpError(
         error?.message ?? "Error creating notification",
         error?.statusCode ?? 500
