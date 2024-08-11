@@ -9,7 +9,7 @@ const app = express();
 const port = process.env.PORT ?? 3000;
 
 // Use cors and bodyParser middleware
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 
 // Use routers
