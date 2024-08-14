@@ -4,14 +4,16 @@ export function successResponse(res: Response, data: any, statusCode: number = 2
   return res.status(statusCode).json({
     success: true,
     data,
+    statusCode,
   });
 }
 
-export function errorResponse(res: Response, error: any, message: string, statusCode: number = 400) {
+export function errorResponse(res: Response, error: any, data: string, statusCode: number = 400) {
   console.error("errorResponse.....", error?.stack);
   return res.status(statusCode).json({
     success: false,
-    message,
+    data,
+    statusCode,
   });
 }
 
